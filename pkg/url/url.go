@@ -90,11 +90,12 @@ func InferHttpsPrefix(inputUrl *string) {
 
 const defaultHttpGetTimeout = 3 * time.Second
 
+// Trys a Get request on url and if status code = 200 and within timeout of 3 seconds returns true. Otherwise false.
 func UrlIsAvailable(inputUrl string) (available bool) {
 	return ConfigurableUrlIsAvailable(inputUrl, defaultHttpGetTimeout)
 }
 
-// Trys a Get request on url and if status code = 200, return true. Otherwise false.
+// Trys a Get request on url and if status code = 200 and within timeout returns true. Otherwise false.
 func ConfigurableUrlIsAvailable(inputUrl string, timeout time.Duration) (available bool) {
 	select {
 	case r := <-checkUrl(inputUrl):
