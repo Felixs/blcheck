@@ -1,4 +1,4 @@
-MAIN_PATH=cmd/main.go
+MAIN_PATH=cmd/blcheck/main.go
 BIN_PATH=bin/blcheck
 
 build:
