@@ -8,8 +8,10 @@ How about a tool that checks every href/link reference on a website/html-page if
 >So here goes nothing!
 
 # Tasks
-- [ ] create a cmd tool, that takes an url as input
-- [ ] fetch the html content of the url
+- [x] create a cmd tool, that takes an url as input
+- [x] validate url input
+- [ ] add missing http(s) protocol prefix if missing
+- [x] fetch the html content of the url
 - [ ] parse the html content, collect all hrefs/links
 - [ ] check if the links are still accessable
 - [ ] create a report with all checked links and their status
