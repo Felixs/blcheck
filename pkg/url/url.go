@@ -3,12 +3,13 @@ package url
 import (
 	"errors"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
 )
 
-// checks if given url string seems valid
+// Checks if given url string seems to be valid
 func IsUrlValid(inputUrl string) (isValid bool) {
 	urlData, err := url.Parse(inputUrl)
 	if err != nil {
@@ -23,7 +24,7 @@ func IsUrlValid(inputUrl string) (isValid bool) {
 	return true
 }
 
-// tries to recieve
+// Tries to recieve a body with get request from url and returns it as string
 func GetBodyFromUrl(inputUrl string) (body string, err error) {
 	resp, err := http.Get(inputUrl)
 	if err != nil {
@@ -46,4 +47,17 @@ func GetBodyFromUrl(inputUrl string) (body string, err error) {
 
 func ExtractHrefs(body string) (hrefs []string) {
 	return []string{""}
+}
+
+const (
+	prefixHttp  = "http://"
+	prefixHttps = "https://"
+)
+
+// Given string is checked for prefixing http(s) protocoll and gets added https if needed
+func InferHttpsPrefix(inputUrl *string) {
+	if !strings.HasPrefix(*inputUrl, prefixHttps) && !strings.HasPrefix(*inputUrl, prefixHttp) {
+		log.Println("infered https:// prefix, because given url did not have an protocol")
+		*inputUrl = "https://" + *inputUrl
+	}
 }

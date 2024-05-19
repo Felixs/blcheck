@@ -7,7 +7,6 @@ import (
 )
 
 func TestIsUrlValid(t *testing.T) {
-
 	cases := []struct {
 		name string
 		url  string
@@ -59,7 +58,6 @@ func TestIsUrlValid(t *testing.T) {
 }
 
 func TestGetBodyFromUrl(t *testing.T) {
-
 	t.Run("check body from a page that has 200 return", func(t *testing.T) {
 		bodyData := "<html><body>hello</body></html>"
 		fakeServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -89,6 +87,44 @@ func TestGetBodyFromUrl(t *testing.T) {
 			t.Fatal("expected to get an error")
 		}
 	})
+}
+
+// infers https prefix if url does not start with a http protocol
+func TestInferHttpsPrefix(t *testing.T) {
+
+	cases := []struct {
+		name  string
+		input string
+		want  string
+	}{
+		{
+			"adding https for missing protocol",
+			"www.heise.de",
+			"https://www.heise.de",
+		}, {
+			"check for existing https:// prefix",
+			"https://www.heise.de",
+			"https://www.heise.de",
+		}, {
+			"check for existing http:// prefix",
+			"http://www.heise.de",
+			"http://www.heise.de",
+		}, {
+			"check for empty string, seems stupid, but lets do it",
+			"",
+			"https://",
+		},
+	}
+
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			InferHttpsPrefix(&tt.input)
+
+			if tt.input != tt.want {
+				t.Errorf("got %s want %s", tt.input, tt.want)
+			}
+		})
+	}
 }
 
 // TODO: next test

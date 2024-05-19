@@ -39,16 +39,18 @@ Error: %s
 }
 
 // checks url for broken links
-func processUrl(input_url string) {
-	log.Println("Checking URL: ", input_url)
-	if !url.IsUrlValid(input_url) {
-		fmt.Printf("not a valid url %s\n", input_url)
+func processUrl(inputUrl string) {
+	log.Println("Checking URL: ", inputUrl)
+	url.InferHttpsPrefix(&inputUrl)
+	if !url.IsUrlValid(inputUrl) {
+		fmt.Printf("not a valid url %s\n", inputUrl)
 		os.Exit(1)
 	}
-	body, err := url.GetBodyFromUrl(input_url)
+
+	body, err := url.GetBodyFromUrl(inputUrl)
 	if err != nil {
 		fmt.Printf("could not get data from url: " + err.Error())
 		os.Exit(2)
 	}
-	fmt.Println(body)
+	fmt.Println("Body length:", len(body), "byte")
 }
