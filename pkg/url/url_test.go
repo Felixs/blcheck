@@ -3,7 +3,9 @@ package url
 import (
 	"net/http"
 	"net/http/httptest"
+	"slices"
 	"testing"
+	"time"
 )
 
 func TestIsUrlValid(t *testing.T) {
@@ -127,13 +129,103 @@ func TestInferHttpsPrefix(t *testing.T) {
 	}
 }
 
-// TODO: next test
-// func TestExtractHrefs(t *testing.T) {
-// 	bodyData := `<html><body><a href="www.google.de">test</a></body></html>`
-// 	want := []string{"www.google.de"}
-// 	got := ExtractHrefs(bodyData)
+func TestExtractHttpUrls(t *testing.T) {
 
-// 	if !reflect.DeepEqual(got, want) {
-// 		t.Errorf("got %v want %v", got, want)
-// 	}
-// }
+	cases := []struct {
+		name string
+		body string
+		want []string
+	}{
+		{
+			"basic one url in body",
+			`<html><body><a href="http://www.google.de">test</a></body></html>`,
+			[]string{"http://www.google.de"},
+		}, {
+			"No urls found",
+			`<html><body><a href="google.de">test</a></body></html>`,
+			[]string{},
+		}, {
+			"No urls found",
+			`<html><body><a href="google.de">https://heise.de http://www.google.de</a></body></html>`,
+			[]string{"https://heise.de", "http://www.google.de"},
+		}, {
+			"Only non http urls",
+			`<html><body><a href="mailto://google.de">file://heise.de xmpp://www.google.de</a></body></html>`,
+			[]string{},
+		}, {
+			"Remove doubled urls",
+			`<html><body><a href="http://www.google.de">http://www.google.de</a></body></html>`,
+			[]string{"http://www.google.de"},
+		}, {
+			"Lowercase and uppercase have to be ignored, cast everything to lowercast",
+			`<html><body><a href="http://www.GOOGLE.de">http://www.google.de</a></body></html>`,
+			[]string{"http://www.google.de"},
+		}, {
+			"Cut ancor tags on links",
+			`<html><body><a href="http://www.google.de/#very-good-link">http://www.google.de/</a></body></html>`,
+			[]string{"http://www.google.de"},
+		}, {
+			"Remove tailing / on urls",
+			`<html><body><a href="http://www.google.de/">hello</a></body></html>`,
+			[]string{"http://www.google.de"},
+		},
+	}
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			got := ExtractHttpUrls(tt.body)
+
+			if len(got) != len(tt.want) {
+				t.Fatalf("expected %v and %v to have the same length", tt.want, got)
+			}
+			for _, wantElement := range tt.want {
+				if !slices.Contains(got, wantElement) {
+					t.Errorf("expected %v to include want %s", got, wantElement)
+				}
+			}
+		})
+	}
+}
+
+func TestUrlIsAvailable(t *testing.T) {
+	t.Run("server returns 200", func(t *testing.T) {
+		fakeServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(200)
+		}))
+		defer fakeServer.Close()
+
+		got := UrlIsAvailable(fakeServer.URL)
+		want := true
+
+		if got != want {
+			t.Errorf("got %v want %v", got, want)
+		}
+	})
+	t.Run("server returns 404", func(t *testing.T) {
+		fakeServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(404)
+		}))
+		defer fakeServer.Close()
+
+		got := UrlIsAvailable(fakeServer.URL)
+		want := false
+
+		if got != want {
+			t.Errorf("got %v want %v", got, want)
+		}
+	})
+	t.Run("server need more than 5ms to respond (timeout on dunction is configurable)", func(t *testing.T) {
+		fakeServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			time.Sleep(50 * time.Millisecond)
+			w.WriteHeader(200)
+		}))
+		defer fakeServer.Close()
+
+		got := ConfigurableUrlIsAvailable(fakeServer.URL, time.Millisecond*5)
+		want := false
+
+		if got != want {
+			t.Errorf("got %v want %v", got, want)
+		}
+	})
+
+}

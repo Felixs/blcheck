@@ -12,12 +12,20 @@ How about a tool that checks every href/link reference on a website/html-page if
 - [x] validate url input
 - [x] add missing http(s) protocol prefix if missing
 - [x] fetch the html content of the url
-- [ ] parse the html content, collect all hrefs/links
-- [ ] check if the links are still accessable
-- [ ] create a report with all checked links and their status
+- [x] parse the html content, collect all unique lowercase hrefs/links
+  - [x] remove ancor from links like www.example.com/#about -> www.example.com
+- [x] check if the links are still accessable (from current machine)
+- [x] create a report with all checked links and their status
+- [ ] move from sequential url check to parallel url check
+- [ ] cleanup how the url report is displayed
+- [ ] create a presentable output format csv/html
+- [ ] add a --help --version flag to print out help and version text
 
-# Features for the future
+# maybe features for the future
+- add a counter how often an unique url appeared
+- timeout and non 200 result should be distinguishable
+- maybe check of if an anchor is given this anchor is still present on the page
 - recursive mode, that checks all links on the same domain as the first given url
 - exclude/include regex parameter that can filter which links should be checked
-- create an nice csv/html output of link-report
+- ~~create an nice csv/html output of link-report~~
 
