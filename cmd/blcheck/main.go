@@ -1,3 +1,11 @@
+/*
+	blcheck - A simple tool to check which links on your websites are broken.
+
+Usage: blcheck <URL>
+
+	-max-parallel-requests int
+	      Setting a maximum how many requests get executed in parallel (default 20)
+*/
 package main
 
 import (
@@ -12,43 +20,49 @@ import (
 )
 
 var (
-	flagUrl          string
-	processStarttime time.Time
+	flagUrl                 string
+	flagMaxParallelRequests uint
+	errorMessage            string
 )
 
-// blcheck - A simple tool to check which links on your websites are broken.
+// Blcheck entry point.
 func main() {
-	// flagUrl := ""
-	processStarttime = time.Now()
 	checkedArguments(&flagUrl)
-
 	processUrl(flagUrl)
 }
 
 // Parses the command line arguments and checks if they all needed arguments are present.
 func checkedArguments(flagUrl *string) {
+	flag.UintVar(&flagMaxParallelRequests, "max-parallel-requests", report.MaxNumParallelQueries, "Setting a maximum how many requests get executed in parallel")
+	// setting own print function, to handle positonal arguments
+	flag.Usage = printUsage
 	flag.Parse()
 	if flag.NArg() != 1 {
-		printUsage("URL is required")
+		errorMessage = "URL is required"
+		printUsage()
 		os.Exit(3)
 
 	}
 	*flagUrl = flag.Arg(0)
 }
 
-// Prints how to use the tool to stdout with an error message.
-func printUsage(errorMsg string) {
+// Prints how to use the tool to stdout, with an error message if present.
+func printUsage() {
+	if errorMessage != "" {
+		fmt.Println(errorMessage)
+	}
+
 	fmt.Printf(`blcheck - A simple tool to check which links on your websites are broken.
 	
 Usage: blcheck <URL>
-	
-Error: %s
-`, errorMsg)
+`)
+	flag.PrintDefaults()
 }
 
 // Checks url for broken links.
 func processUrl(inputUrl string) {
 	log.Println("Checking URL: ", inputUrl)
+	processStarttime := time.Now()
 	url.InferHttpsPrefix(&inputUrl)
 	if !url.IsUrlValid(inputUrl) {
 		fmt.Printf("not a valid url %s\n", inputUrl)
@@ -64,7 +78,7 @@ func processUrl(inputUrl string) {
 	fmt.Printf("parsing done in %.4f seconds\n", time.Since(processStarttime).Seconds())
 	fmt.Printf("extracted %d unique urls, starting url report scan\n", len(httpUrls))
 
-	urlReports := report.CreateUrlReport(httpUrls)
+	urlReports := report.CustomizableCreateUrlReport(httpUrls, int(flagMaxParallelRequests))
 	fmt.Println(urlReports.FullString())
 
 }

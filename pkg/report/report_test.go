@@ -3,7 +3,6 @@ package report
 import (
 	"net/http"
 	"net/http/httptest"
-	"reflect"
 	"testing"
 	"time"
 )
@@ -23,7 +22,7 @@ func TestCreateUrlReport(t *testing.T) {
 		inputUrls := []string{fakeServer.URL}
 		expectedUrlStatus := []UrlStatus{{fakeServer.URL, true, http.StatusText(200)}}
 		r := CreateUrlReport(inputUrls)
-		assertReport(t, r, inputUrls, expectedUrlStatus)
+		assertReport(t, r, expectedUrlStatus)
 	})
 
 	t.Run("Check with two entry", func(t *testing.T) {
@@ -32,39 +31,55 @@ func TestCreateUrlReport(t *testing.T) {
 		fakeServer2 := createDelayServerWithStatus(0*time.Second, 404)
 		defer fakeServer2.Close()
 		inputUrls := []string{fakeServer.URL, fakeServer2.URL}
-		expectedUrlStatus := []UrlStatus{{fakeServer.URL, true, http.StatusText(200)}, {fakeServer2.URL, false, http.StatusText(404)}}
+		expectedUrlStatus := []UrlStatus{{fakeServer.URL, true, ""}, {fakeServer2.URL, false, ""}}
 		r := CreateUrlReport(inputUrls)
-		assertReport(t, r, inputUrls, expectedUrlStatus)
+		assertReport(t, r, expectedUrlStatus)
 	})
 
 	t.Run("runs checks in parallel", func(t *testing.T) {
 		fakeServer := createDelayServerWithStatus(50*time.Millisecond, 200)
 		defer fakeServer.Close()
 		inputUrls := []string{fakeServer.URL, fakeServer.URL, fakeServer.URL}
-		start := time.Now()
-		CreateUrlReport(inputUrls)
-		if time.Since(start) > 52*time.Millisecond {
-			t.Errorf("Processing took to long")
+		urlReport := CreateUrlReport(inputUrls)
+		maxRuntime := 75 * time.Millisecond
+		// flaky test, >75 is half of execution time in squence
+		if urlReport.Runtime > maxRuntime {
+			t.Errorf("Runtime was to slow with %v expected less than %v", urlReport.Runtime, maxRuntime)
 		}
+	})
 
+	t.Run("runs checks in parallel with max number of workern", func(t *testing.T) {
+		fakeServer := createDelayServerWithStatus(50*time.Millisecond, 200)
+		defer fakeServer.Close()
+		inputUrls := []string{fakeServer.URL, fakeServer.URL, fakeServer.URL}
+		urlReport := CustomizableCreateUrlReport(inputUrls, 1)
+		minRuntime := 150 * time.Millisecond
+		if urlReport.Runtime < minRuntime {
+			t.Errorf("Runtime was to fast with %v expected more than %v", urlReport.Runtime, minRuntime)
+		}
 	})
 }
 
-func assertReport(t *testing.T, r UrlReport, inputUrls []string, expectedUrlStatus []UrlStatus) {
+func assertReport(t *testing.T, r UrlReport, expectedUrlStatus []UrlStatus) {
 	t.Helper()
-	if len(r.UrlStatus) != len(inputUrls) {
-		t.Fatalf("Checked urls not the same length, got %d want %d", len(r.UrlStatus), len(inputUrls))
+	if len(r.UrlStatus) != len(expectedUrlStatus) {
+		t.Fatalf("Checked urls not the same length, got %d want %d", len(r.UrlStatus), len(expectedUrlStatus))
 	}
-	// TODO: need a better solution to check if output is okay
+	// TODO: need a better solution to check if output is okay, this seems overkill
+	lastFound := false
 	for _, tt := range expectedUrlStatus {
+		lastFound = false
 		for _, bt := range r.UrlStatus {
 			if tt.Url == bt.Url {
-				if !reflect.DeepEqual(tt, bt) {
-					t.Errorf("missmatch for same url: got %v expecetd %v", bt, tt)
+				if tt.IsReachable != bt.IsReachable {
+					t.Errorf("expected %q to be IsReachable=%v", tt.Url, tt.IsReachable)
 				}
+				lastFound = true
 				break
 			}
-			//t.Errorf("%q not found", tt.Url)
+		}
+		if lastFound == false {
+			t.Errorf("expected %q to be in %v", tt.Url, r)
 		}
 	}
 

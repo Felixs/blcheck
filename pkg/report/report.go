@@ -9,19 +9,22 @@ import (
 	"github.com/Felixs/blcheck/pkg/url"
 )
 
-// Information about a url check on a single webpage
+// Max number of parallel routines to query webserver.
+const MaxNumParallelQueries = 20
+
+// Information about a url check on a single webpage.
 type UrlReport struct {
 	ExecutedAt time.Time     `json:"executed_at"`
 	Runtime    time.Duration `json:"runtime"`
 	UrlStatus  []UrlStatus   `json:"url_status"`
 }
 
-// String representation auf UrlReport
+// String representation auf UrlReport.
 func (r UrlReport) String() string {
 	return fmt.Sprintf("Started: %s , took: %s, urlcount: %d", r.ExecutedAt, r.Runtime, len(r.UrlStatus))
 }
 
-// String representation auf UrlReport with all UrlStatus
+// String representation auf UrlReport with all UrlStatus.
 func (r UrlReport) FullString() string {
 	var builder strings.Builder
 	builder.WriteString(r.String() + "\n")
@@ -32,48 +35,47 @@ func (r UrlReport) FullString() string {
 	return builder.String()
 }
 
-// Information of a availability check on one webpage
+// Information of a availability check on one webpage.
 type UrlStatus struct {
 	Url           string `json:"url"`
 	IsReachable   bool   `json:"is_reachable"`
 	StatusMessage string `json:"status_message"`
 }
 
-// String representation of a UrlStatus
+// String representation of a UrlStatus.
 func (s UrlStatus) String() string {
 	return fmt.Sprintf("%v\t%s\t%s", s.IsReachable, s.StatusMessage, s.Url)
 }
 
-// Creates UrlReport from a list of given urls
+// Creates UrlReport from a list of given urls.
 func CreateUrlReport(urls []string) UrlReport {
-	// TODO: refactor this
+	return CustomizableCreateUrlReport(urls, MaxNumParallelQueries)
+}
+
+// Creates UrlReport from a list of given urls with max. of parallel request routines.
+func CustomizableCreateUrlReport(urls []string, maxRoutines int) UrlReport {
 	start := time.Now()
+	inputChan := make(chan string)
 	resultChan := make(chan UrlStatus)
 	urlStatus := []UrlStatus{}
 
+	// go routine that reads from result chan
 	var wg2 sync.WaitGroup
 	wg2.Add(1)
-	go func() {
-		defer wg2.Done()
-		for n := range resultChan {
-			urlStatus = append(urlStatus, n)
-		}
-	}()
+	go gatherResults(&wg2, resultChan, &urlStatus)
 
+	// routine that reads from input chan and writes to result chan
 	var wg sync.WaitGroup
-	for _, checkUrl := range urls {
+	for i := 0; i < maxRoutines; i++ {
 		wg.Add(1)
-		go func(inputUrl string) {
-			defer wg.Done()
-			status := url.UrlIsAvailable(inputUrl)
-			message := "OK"
-			if !status {
-				message = "Not Found"
-			}
-			resultChan <- UrlStatus{inputUrl, status, message}
-		}(checkUrl)
+		go checkUrlHandler(inputChan, resultChan, &wg)
 	}
 
+	// write input to input chan
+	for _, inputUrl := range urls {
+		inputChan <- inputUrl
+	}
+	close(inputChan)
 	wg.Wait()
 	close(resultChan)
 	wg2.Wait()
@@ -82,5 +84,26 @@ func CreateUrlReport(urls []string) UrlReport {
 		start,
 		time.Since(start),
 		urlStatus,
+	}
+}
+
+// Go routine to gather UrlStatus from result channel.
+func gatherResults(wg2 *sync.WaitGroup, resultChan chan UrlStatus, urlStatus *[]UrlStatus) {
+	defer wg2.Done()
+	for result := range resultChan {
+		*urlStatus = append(*urlStatus, result)
+	}
+}
+
+// Go routine to get run url string by UrlIsAvailable to get UrlStatus.
+func checkUrlHandler(inputChan chan string, resultChan chan UrlStatus, wg *sync.WaitGroup) {
+	defer wg.Done()
+	for inputUrl := range inputChan {
+		status := url.UrlIsAvailable(inputUrl)
+		message := "OK"
+		if !status {
+			message = "Not Found"
+		}
+		resultChan <- UrlStatus{inputUrl, status, message}
 	}
 }
