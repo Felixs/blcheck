@@ -20,8 +20,9 @@ How about a tool that checks every href/link reference on a website/html-page if
 - [x] limit the number of parallel requests 
   - [x] add a programm flag aswell
 - [x] cleanup how the url report is displayed
+- [x] add a --help --version flag to print out help and version text
 - [ ] create a presentable output format csv/html
-- [ ] add a --help --version flag to print out help and version text
+- [ ] make http get timeout configurable with flag
 
 # maybe features for the future
 - add a counter how often an unique url appeared

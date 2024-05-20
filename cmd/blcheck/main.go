@@ -19,7 +19,10 @@ import (
 	"github.com/Felixs/blcheck/pkg/url"
 )
 
+const version = "0.0.1"
+
 var (
+	flagVersion             bool
 	flagUrl                 string
 	flagMaxParallelRequests uint
 	errorMessage            string
@@ -33,10 +36,17 @@ func main() {
 
 // Parses the command line arguments and checks if they all needed arguments are present.
 func checkedArguments(flagUrl *string) {
+	// TODO: if using 2 different flag names for a single values flag.Usage needs to be overwritten
+	flag.BoolVar(&flagVersion, "version", false, "Displays version of blcheck")
+	flag.BoolVar(&flagVersion, "v", false, "Displays version of blcheck")
 	flag.UintVar(&flagMaxParallelRequests, "max-parallel-requests", report.MaxNumParallelQueries, "Setting a maximum how many requests get executed in parallel")
 	// setting own print function, to handle positonal arguments
 	flag.Usage = printUsage
 	flag.Parse()
+	if flagVersion {
+		fmt.Println("blcheck " + version + "\n2024 - Felix Sponholz")
+		os.Exit(0)
+	}
 	if flag.NArg() != 1 {
 		errorMessage = "URL is required"
 		printUsage()
@@ -52,10 +62,10 @@ func printUsage() {
 		fmt.Println(errorMessage)
 	}
 
-	fmt.Printf(`blcheck - A simple tool to check which links on your websites are broken.
+	fmt.Printf(`blcheck (%s)- A simple tool to check which links on your websites are broken.
 	
 Usage: blcheck <URL>
-`)
+`, version)
 	flag.PrintDefaults()
 }
 
