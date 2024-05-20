@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/Felixs/blcheck/pkg/report"
 	"github.com/Felixs/blcheck/pkg/url"
 )
 
@@ -60,21 +61,10 @@ func processUrl(inputUrl string) {
 		os.Exit(2)
 	}
 	httpUrls := url.ExtractHttpUrls(body)
-	printUrlOverview(httpUrls)
-	fmt.Println("String url scan")
-	for i, httpUrl := range httpUrls {
-		isAvailbale := url.UrlIsAvailable(httpUrl)
-		fmt.Printf("%v %s %d/%d\n", isAvailbale, httpUrl, i+1, len(httpUrls))
-	}
-	fmt.Printf("Process done in %.4f seconds\n", time.Since(processStarttime).Seconds())
-}
+	fmt.Printf("parsing done in %.4f seconds\n", time.Since(processStarttime).Seconds())
+	fmt.Printf("extracted %d unique urls, starting url report scan\n", len(httpUrls))
 
-// Prints basic infos about the found urls.
-func printUrlOverview(httpUrls []string) {
-	for _, httpUrl := range httpUrls {
-		fmt.Println("Found url " + httpUrl)
-	}
-	fmt.Printf("Found a total of %d unique urls\n", len(httpUrls))
+	urlReports := report.CreateUrlReport(httpUrls)
+	fmt.Println(urlReports.FullString())
 
-	fmt.Printf("Process done in %.4f seconds\n", time.Since(processStarttime).Seconds())
 }

@@ -16,8 +16,9 @@ How about a tool that checks every href/link reference on a website/html-page if
   - [x] remove ancor from links like www.example.com/#about -> www.example.com
 - [x] check if the links are still accessable (from current machine)
 - [x] create a report with all checked links and their status
-- [ ] move from sequential url check to parallel url check
-- [ ] cleanup how the url report is displayed
+- [x] move from sequential url check to parallel url check
+- [ ] limit the number of parallel requests (add a programm flag aswell)
+- [x] cleanup how the url report is displayed
 - [ ] create a presentable output format csv/html
 - [ ] add a --help --version flag to print out help and version text
 
