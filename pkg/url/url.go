@@ -13,6 +13,14 @@ import (
 	"mvdan.cc/xurls/v2"
 )
 
+const (
+	// time to wait for an answer of webserver
+	defaultHttpGetTimeout = 5 * time.Second
+	// protocol prefixes
+	prefixHttp  = "http://"
+	prefixHttps = "https://"
+)
+
 // Checks if given url string seems to be valid.
 func IsUrlValid(inputUrl string) (isValid bool) {
 	urlData, err := url.Parse(inputUrl)
@@ -75,11 +83,6 @@ func filterNoneHttpUrls(strictUrls []string) []string {
 	return httpUrls
 }
 
-const (
-	prefixHttp  = "http://"
-	prefixHttps = "https://"
-)
-
 // Given string is checked for prefixing http(s) protocoll and gets added https if needed.
 func InferHttpsPrefix(inputUrl *string) {
 	if !strings.HasPrefix(*inputUrl, prefixHttps) && !strings.HasPrefix(*inputUrl, prefixHttp) {
@@ -87,8 +90,6 @@ func InferHttpsPrefix(inputUrl *string) {
 		*inputUrl = "https://" + *inputUrl
 	}
 }
-
-const defaultHttpGetTimeout = 3 * time.Second
 
 // Trys a Get request on url and if status code = 200 and within timeout of 3 seconds returns true. Otherwise false.
 func UrlIsAvailable(inputUrl string) (available bool) {
