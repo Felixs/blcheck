@@ -1,0 +1,31 @@
+# Tasks
+- [x] create a cmd tool, that takes an url as input
+- [x] validate url input
+- [x] add missing http(s) protocol prefix if missing
+- [x] fetch the html content of the url
+- [x] parse the html content, collect all unique lowercase hrefs/links
+  - [x] remove ancor from links like www.example.com/#about -> www.example.com
+- [x] check if the links are still accessable (from current machine)
+- [x] create a report with all checked links and their status
+- [x] move from sequential url check to parallel url check
+- [x] limit the number of parallel requests 
+  - [x] add a programm flag aswell
+- [x] cleanup how the url report is displayed
+- [x] add a --help --version flag to print out help and version text
+- [ ] create a presentable output format csv/html
+- [ ] make http get timeout configurable with flag
+- [ ] add advances info for UrlResults like response time, content length, status code
+- [ ] while parsing the first html content, add a counter to uniqe urls how often they appear
+- [ ] add a flag to exclude/include certain urls with regex (and the functionality ofc)
+- [ ] *experimental* add a flag to use a certain proxy server or maybe dns resolver
+- [ ] add CHANGELOG.md by autochangelog
+- [ ] add github action to run test on push
+- [ ] add a dry run flag to check how many unique urls are found on a webpage
+
+# maybe features for the future
+- check also urls with anchor and if this anchor is still present on the page
+- recursive mode, that checks all links on the same domain as the first given url
+- ~~add a counter how often an unique url appeared~~
+- ~~exclude/include regex parameter that can filter which links should be checked~~
+- ~~create an nice csv/html output of link-report~~
+- ~~timeout and non 200 result should be distinguishable~~

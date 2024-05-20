@@ -7,28 +7,31 @@ How about a tool that checks every href/link reference on a website/html-page if
 
 >So here goes nothing!
 
-# Tasks
-- [x] create a cmd tool, that takes an url as input
-- [x] validate url input
-- [x] add missing http(s) protocol prefix if missing
-- [x] fetch the html content of the url
-- [x] parse the html content, collect all unique lowercase hrefs/links
-  - [x] remove ancor from links like www.example.com/#about -> www.example.com
-- [x] check if the links are still accessable (from current machine)
-- [x] create a report with all checked links and their status
-- [x] move from sequential url check to parallel url check
-- [x] limit the number of parallel requests 
-  - [x] add a programm flag aswell
-- [x] cleanup how the url report is displayed
-- [x] add a --help --version flag to print out help and version text
-- [ ] create a presentable output format csv/html
-- [ ] make http get timeout configurable with flag
+[TODOs here](TODO.md)
 
-# maybe features for the future
-- add a counter how often an unique url appeared
-- timeout and non 200 result should be distinguishable
-- maybe check of if an anchor is given this anchor is still present on the page
-- recursive mode, that checks all links on the same domain as the first given url
-- exclude/include regex parameter that can filter which links should be checked
-- ~~create an nice csv/html output of link-report~~
+## Requirements
+- go >= 1.22
 
+## Make and use
+```shell
+git clone https://github.com/Felixs/blcheck
+cd blcheck
+make build
+./bin/blcheck https://www.only-on-pages-own-by-you.con
+```
+
+## Usage output
+```shell
+blcheck (0.0.1)- A simple tool to check which links on your websites are broken.
+
+Usage: blcheck <URL>
+  -max-parallel-requests uint
+        Setting a maximum how many requests get executed in parallel (default 20)
+  -v    Displays version of blcheck
+  -version
+        Displays version of blcheck
+```
+
+
+## Reliability
+Make sure to only use this on your own websites or websites you have permission to check. This tool is not meant to be used for malicious purposes. It tries to use sane and safe defaults, but you should always be careful when running tools like this. **Use at own risk!**
