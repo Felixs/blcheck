@@ -15,12 +15,19 @@ import (
 )
 
 const (
-	// time to wait for an answer of webserver
-	defaultHttpGetTimeout = 5 * time.Second
+	DefaultHttpGetTimeout = 5 * time.Second
 	// protocol prefixes
 	prefixHttp  = "http://"
 	prefixHttps = "https://"
 )
+
+// time to wait for an answer of webserver
+var HttpGetTimeout = DefaultHttpGetTimeout
+
+// Overwrites module wide timeout for requests
+func SetHttpGetTimeoutSeconds(timeout time.Duration) {
+	HttpGetTimeout = timeout
+}
 
 // Information of a availability check on one webpage.
 type UrlStatus struct {
@@ -104,9 +111,9 @@ func InferHttpsPrefix(inputUrl *string) {
 	}
 }
 
-// Trys a Get request on url and if status code = 200 and within timeout of 3 seconds returns true. Otherwise false.
+// Trys a Get request on url and if status code = 200 and within timeout of HttpGetTimeout. Otherwise false.
 func UrlIsAvailable(inputUrl string) (available UrlStatus) {
-	return ConfigurableUrlIsAvailable(inputUrl, defaultHttpGetTimeout)
+	return ConfigurableUrlIsAvailable(inputUrl, HttpGetTimeout)
 }
 
 // Trys a Get request on url and if status code = 200 and within timeout returns true. Otherwise false.

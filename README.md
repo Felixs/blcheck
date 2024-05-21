@@ -25,8 +25,14 @@ make build
 blcheck (0.0.1)- A simple tool to check which links on your websites are broken.
 
 Usage: blcheck <URL>
-  -max-parallel-requests uint
-        Setting a maximum how many requests get executed in parallel (default 20)
+  -max-parallel-requests int
+        Maximum number of parallel requests executed (default 20)
+  -max-response-timeout int
+        Maximum timeout wait on requests in seconds (default 5)
+  -mpr int
+        Maximum number of parallel requests executed (default 20)
+  -mrt int
+        Maximum timeout wait on requests in seconds (default 5)
   -v    Displays version of blcheck
   -version
         Displays version of blcheck

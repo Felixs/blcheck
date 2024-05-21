@@ -13,10 +13,10 @@
 - [x] cleanup how the url report is displayed
 - [x] add a --help --version flag to print out help and version text
 - [x] fix basic info output for all http status codes and errors
+- [x] make http get timeout configurable with flag
 - [ ] add advances info for UrlResults like response time, content length, status code
-- [ ] make http get timeout configurable with flag
-- [ ] create a presentable output format csv/html
-
+- [ ] create a presentable output format csv/html/json
+- [ ] validate programm flags for sane inputs
 - [ ] while parsing the first html content, add a counter to uniqe urls how often they appear
 - [ ] add a flag to exclude/include certain urls with regex (and the functionality ofc)
 - [ ] *experimental* add a flag to use a certain proxy server or maybe dns resolver

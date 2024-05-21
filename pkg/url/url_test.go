@@ -225,10 +225,10 @@ func TestUrlIsAvailable(t *testing.T) {
 			w.WriteHeader(serverResponseCode)
 		}))
 		defer fakeServer.Close()
-
-		got := ConfigurableUrlIsAvailable(fakeServer.URL, crawlerTimeout)
+		SetHttpGetTimeoutSeconds(crawlerTimeout)
+		got := UrlIsAvailable(fakeServer.URL)
 		want := UrlStatus{fakeServer.URL, false, createTimeoutMessage(crawlerTimeout)}
-
+		SetHttpGetTimeoutSeconds(DefaultHttpGetTimeout)
 		if got != want {
 			t.Errorf("got %v want %v", got, want)
 		}

@@ -3,8 +3,17 @@
 
 Usage: blcheck <URL>
 
-	-max-parallel-requests int
-	      Setting a maximum how many requests get executed in parallel (default 20)
+-max-parallel-requests int
+
+	Setting a maximum how many requests get executed in parallel (default 20)
+
+-max-response-timeout int
+
+	Maximum timeout wait on requests in seconds (default 5)
+
+-version
+
+	Displays version of blcheck
 */
 package main
 
@@ -24,7 +33,8 @@ const version = "0.0.1"
 var (
 	flagVersion             bool
 	flagUrl                 string
-	flagMaxParallelRequests uint
+	flagMaxParallelRequests int
+	flagMaxTimeoutInSeconds int
 	errorMessage            string
 )
 
@@ -37,12 +47,20 @@ func main() {
 // Parses the command line arguments and checks if they all needed arguments are present.
 func checkedArguments(flagUrl *string) {
 	// TODO: if using 2 different flag names for a single values flag.Usage needs to be overwritten
+	// Version
 	flag.BoolVar(&flagVersion, "version", false, "Displays version of blcheck")
 	flag.BoolVar(&flagVersion, "v", false, "Displays version of blcheck")
-	flag.UintVar(&flagMaxParallelRequests, "max-parallel-requests", report.MaxNumParallelQueries, "Setting a maximum how many requests get executed in parallel")
+	// Ratelimit / parallel requests
+	flag.IntVar(&flagMaxParallelRequests, "max-parallel-requests", report.MaxNumParallelQueries, "Maximum number of parallel requests executed")
+	flag.IntVar(&flagMaxParallelRequests, "mpr", report.MaxNumParallelQueries, "Maximum number of parallel requests executed")
+	// Timeout
+	flag.IntVar(&flagMaxTimeoutInSeconds, "max-response-timeout", int(url.DefaultHttpGetTimeout.Seconds()), "Maximum timeout wait on requests in seconds")
+	flag.IntVar(&flagMaxTimeoutInSeconds, "mrt", int(url.DefaultHttpGetTimeout.Seconds()), "Maximum timeout wait on requests in seconds")
+
 	// setting own print function, to handle positonal arguments
 	flag.Usage = printUsage
 	flag.Parse()
+
 	if flagVersion {
 		fmt.Println("blcheck " + version + "\n2024 - Felix Sponholz")
 		os.Exit(0)
@@ -51,7 +69,6 @@ func checkedArguments(flagUrl *string) {
 		errorMessage = "URL is required"
 		printUsage()
 		os.Exit(3)
-
 	}
 	*flagUrl = flag.Arg(0)
 }
@@ -88,7 +105,7 @@ func processUrl(inputUrl string) {
 	fmt.Printf("parsing done in %.4f seconds\n", time.Since(processStarttime).Seconds())
 	fmt.Printf("extracted %d unique urls, starting url report scan\n", len(httpUrls))
 
+	url.SetHttpGetTimeoutSeconds(time.Duration(flagMaxTimeoutInSeconds) * time.Second)
 	urlReports := report.CustomizableCreateUrlReport(httpUrls, int(flagMaxParallelRequests))
 	fmt.Println(urlReports.FullString())
-
 }
