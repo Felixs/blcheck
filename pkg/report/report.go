@@ -14,9 +14,9 @@ const MaxNumParallelQueries = 20
 
 // Information about a url check on a single webpage.
 type UrlReport struct {
-	ExecutedAt time.Time     `json:"executed_at"`
-	Runtime    time.Duration `json:"runtime"`
-	UrlStatus  []UrlStatus   `json:"url_status"`
+	ExecutedAt time.Time       `json:"executed_at"`
+	Runtime    time.Duration   `json:"runtime"`
+	UrlStatus  []url.UrlStatus `json:"url_status"`
 }
 
 // String representation auf UrlReport.
@@ -35,18 +35,6 @@ func (r UrlReport) FullString() string {
 	return builder.String()
 }
 
-// Information of a availability check on one webpage.
-type UrlStatus struct {
-	Url           string `json:"url"`
-	IsReachable   bool   `json:"is_reachable"`
-	StatusMessage string `json:"status_message"`
-}
-
-// String representation of a UrlStatus.
-func (s UrlStatus) String() string {
-	return fmt.Sprintf("%v\t%s\t%s", s.IsReachable, s.StatusMessage, s.Url)
-}
-
 // Creates UrlReport from a list of given urls.
 func CreateUrlReport(urls []string) UrlReport {
 	return CustomizableCreateUrlReport(urls, MaxNumParallelQueries)
@@ -56,8 +44,8 @@ func CreateUrlReport(urls []string) UrlReport {
 func CustomizableCreateUrlReport(urls []string, maxRoutines int) UrlReport {
 	start := time.Now()
 	inputChan := make(chan string)
-	resultChan := make(chan UrlStatus)
-	urlStatus := []UrlStatus{}
+	resultChan := make(chan url.UrlStatus)
+	urlStatus := []url.UrlStatus{}
 
 	// go routine that reads from result chan
 	var wg2 sync.WaitGroup
@@ -88,7 +76,7 @@ func CustomizableCreateUrlReport(urls []string, maxRoutines int) UrlReport {
 }
 
 // Go routine to gather UrlStatus from result channel.
-func gatherResults(wg2 *sync.WaitGroup, resultChan chan UrlStatus, urlStatus *[]UrlStatus) {
+func gatherResults(wg2 *sync.WaitGroup, resultChan chan url.UrlStatus, urlStatus *[]url.UrlStatus) {
 	defer wg2.Done()
 	for result := range resultChan {
 		*urlStatus = append(*urlStatus, result)
@@ -96,14 +84,10 @@ func gatherResults(wg2 *sync.WaitGroup, resultChan chan UrlStatus, urlStatus *[]
 }
 
 // Go routine to get run url string by UrlIsAvailable to get UrlStatus.
-func checkUrlHandler(inputChan chan string, resultChan chan UrlStatus, wg *sync.WaitGroup) {
+func checkUrlHandler(inputChan chan string, resultChan chan url.UrlStatus, wg *sync.WaitGroup) {
 	defer wg.Done()
 	for inputUrl := range inputChan {
 		status := url.UrlIsAvailable(inputUrl)
-		message := "OK"
-		if !status {
-			message = "Not Found"
-		}
-		resultChan <- UrlStatus{inputUrl, status, message}
+		resultChan <- status
 	}
 }

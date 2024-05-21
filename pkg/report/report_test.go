@@ -5,6 +5,8 @@ import (
 	"net/http/httptest"
 	"testing"
 	"time"
+
+	"github.com/Felixs/blcheck/pkg/url"
 )
 
 func TestCreateUrlReport(t *testing.T) {
@@ -20,7 +22,7 @@ func TestCreateUrlReport(t *testing.T) {
 		fakeServer := createDelayServerWithStatus(0*time.Second, 200)
 		defer fakeServer.Close()
 		inputUrls := []string{fakeServer.URL}
-		expectedUrlStatus := []UrlStatus{{fakeServer.URL, true, http.StatusText(200)}}
+		expectedUrlStatus := []url.UrlStatus{{fakeServer.URL, true, http.StatusText(200)}}
 		r := CreateUrlReport(inputUrls)
 		assertReport(t, r, expectedUrlStatus)
 	})
@@ -31,7 +33,7 @@ func TestCreateUrlReport(t *testing.T) {
 		fakeServer2 := createDelayServerWithStatus(0*time.Second, 404)
 		defer fakeServer2.Close()
 		inputUrls := []string{fakeServer.URL, fakeServer2.URL}
-		expectedUrlStatus := []UrlStatus{{fakeServer.URL, true, ""}, {fakeServer2.URL, false, ""}}
+		expectedUrlStatus := []url.UrlStatus{{fakeServer.URL, true, ""}, {fakeServer2.URL, false, ""}}
 		r := CreateUrlReport(inputUrls)
 		assertReport(t, r, expectedUrlStatus)
 	})
@@ -60,7 +62,7 @@ func TestCreateUrlReport(t *testing.T) {
 	})
 }
 
-func assertReport(t *testing.T, r UrlReport, expectedUrlStatus []UrlStatus) {
+func assertReport(t *testing.T, r UrlReport, expectedUrlStatus []url.UrlStatus) {
 	t.Helper()
 	if len(r.UrlStatus) != len(expectedUrlStatus) {
 		t.Fatalf("Checked urls not the same length, got %d want %d", len(r.UrlStatus), len(expectedUrlStatus))

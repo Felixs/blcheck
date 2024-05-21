@@ -2,6 +2,7 @@ package url
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -20,6 +21,18 @@ const (
 	prefixHttp  = "http://"
 	prefixHttps = "https://"
 )
+
+// Information of a availability check on one webpage.
+type UrlStatus struct {
+	Url           string `json:"url"`
+	IsReachable   bool   `json:"is_reachable"`
+	StatusMessage string `json:"status_message"`
+}
+
+// String representation of a UrlStatus.
+func (s UrlStatus) String() string {
+	return fmt.Sprintf("%v\t%s\t%s", s.IsReachable, s.StatusMessage, s.Url)
+}
 
 // Checks if given url string seems to be valid.
 func IsUrlValid(inputUrl string) (isValid bool) {
@@ -92,33 +105,45 @@ func InferHttpsPrefix(inputUrl *string) {
 }
 
 // Trys a Get request on url and if status code = 200 and within timeout of 3 seconds returns true. Otherwise false.
-func UrlIsAvailable(inputUrl string) (available bool) {
+func UrlIsAvailable(inputUrl string) (available UrlStatus) {
 	return ConfigurableUrlIsAvailable(inputUrl, defaultHttpGetTimeout)
 }
 
 // Trys a Get request on url and if status code = 200 and within timeout returns true. Otherwise false.
-func ConfigurableUrlIsAvailable(inputUrl string, timeout time.Duration) (available bool) {
+func ConfigurableUrlIsAvailable(inputUrl string, timeout time.Duration) (available UrlStatus) {
 	select {
 	case r := <-checkUrl(inputUrl):
 		return r
 	case <-time.After(timeout):
-		return false
+		return UrlStatus{
+			Url:           inputUrl,
+			IsReachable:   false,
+			StatusMessage: createTimeoutMessage(timeout),
+		}
 	}
 }
 
+// Formats a duration as status message
+func createTimeoutMessage(timeout time.Duration) string {
+	return fmt.Sprintf("Timed out after %v", timeout)
+}
+
 // Creates chan that handels url get returns.
-func checkUrl(inputUrl string) chan bool {
-	ch := make(chan bool, 1)
+func checkUrl(inputUrl string) chan UrlStatus {
+	ch := make(chan UrlStatus, 1)
 	go func() {
+		isReachable := false
+		statusMessage := "Unknown"
 		//FIXME: maybe use http.Head(inputUrl)?
 		resp, err := http.Get(inputUrl)
 		if err != nil {
-			ch <- false
-		} else if resp.StatusCode != http.StatusOK {
-			ch <- false
+			statusMessage = err.Error()
+		} else {
+			statusMessage = http.StatusText(resp.StatusCode)
+			isReachable = (resp.StatusCode == http.StatusOK)
 		}
 
-		ch <- true
+		ch <- UrlStatus{Url: inputUrl, IsReachable: isReachable, StatusMessage: statusMessage}
 	}()
 	return ch
 }

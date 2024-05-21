@@ -187,41 +187,47 @@ func TestExtractHttpUrls(t *testing.T) {
 }
 
 func TestUrlIsAvailable(t *testing.T) {
-	t.Run("server returns 200", func(t *testing.T) {
+
+	t.Run("handeling 200er results in time", func(t *testing.T) {
+		serverStatusCode := 200
 		fakeServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(200)
+			w.WriteHeader(serverStatusCode)
 		}))
 		defer fakeServer.Close()
-
 		got := UrlIsAvailable(fakeServer.URL)
-		want := true
+		want := UrlStatus{fakeServer.URL, true, http.StatusText(serverStatusCode)}
 
 		if got != want {
 			t.Errorf("got %v want %v", got, want)
 		}
 	})
-	t.Run("server returns 404", func(t *testing.T) {
+
+	t.Run("handeling none 200er results in time", func(t *testing.T) {
+		serverStatusCode := 404
 		fakeServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(404)
+			w.WriteHeader(serverStatusCode)
 		}))
 		defer fakeServer.Close()
-
 		got := UrlIsAvailable(fakeServer.URL)
-		want := false
+		want := UrlStatus{fakeServer.URL, false, http.StatusText(serverStatusCode)}
 
 		if got != want {
 			t.Errorf("got %v want %v", got, want)
 		}
+
 	})
+
 	t.Run("server need more than 5ms to respond (timeout on dunction is configurable)", func(t *testing.T) {
+		serverResponseCode := 200
+		crawlerTimeout := time.Millisecond * 5
 		fakeServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			time.Sleep(50 * time.Millisecond)
-			w.WriteHeader(200)
+			w.WriteHeader(serverResponseCode)
 		}))
 		defer fakeServer.Close()
 
-		got := ConfigurableUrlIsAvailable(fakeServer.URL, time.Millisecond*5)
-		want := false
+		got := ConfigurableUrlIsAvailable(fakeServer.URL, crawlerTimeout)
+		want := UrlStatus{fakeServer.URL, false, createTimeoutMessage(crawlerTimeout)}
 
 		if got != want {
 			t.Errorf("got %v want %v", got, want)
