@@ -22,9 +22,12 @@ make build
 
 ## Usage output
 ```shell
-blcheck (0.0.1)- A simple tool to check which links on your websites are broken.
+blcheck (0.0.2)- A simple tool to check which links on your websites are broken.
 
 Usage: blcheck <URL>
+  -j    Set flag to export output as json format
+  -json
+        Set flag to export output as json format
   -max-parallel-requests int
         Maximum number of parallel requests executed (default 20)
   -max-response-timeout int

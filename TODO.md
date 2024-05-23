@@ -15,7 +15,9 @@
 - [x] fix basic info output for all http status codes and errors
 - [x] make http get timeout configurable with flag
 - [ ] add advances info for UrlResults like response time, content length, status code
-- [ ] create a presentable output format csv/html/json
+- [ ] create a presentable output format csv, make accessible via flag
+- [ ] create a presentable output format html, make accessible via flag
+- [x] create a presentable output format json, make accessible via flag
 - [ ] validate programm flags for sane inputs
 - [ ] while parsing the first html content, add a counter to uniqe urls how often they appear
 - [ ] add a flag to exclude/include certain urls with regex (and the functionality ofc)
@@ -23,6 +25,9 @@
 - [ ] add CHANGELOG.md by autochangelog
 - [ ] add github action to run test on push
 - [ ] add a dry run flag to check how many unique urls are found on a webpage
+- [ ] add a flag for output to only output broken links, and add a exit code that signals if broken links are found
+- [ ] move time to parse and number of urls to UrlReport meta data
+
 
 # maybe features for the future
 - check also urls with anchor and if this anchor is still present on the page

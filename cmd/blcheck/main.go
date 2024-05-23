@@ -14,6 +14,10 @@ Usage: blcheck <URL>
 -version
 
 	Displays version of blcheck
+
+-json
+
+	Export output as json format
 */
 package main
 
@@ -28,13 +32,14 @@ import (
 	"github.com/Felixs/blcheck/pkg/url"
 )
 
-const version = "0.0.1"
+const version = "0.0.2"
 
 var (
 	flagVersion             bool
 	flagUrl                 string
 	flagMaxParallelRequests int
 	flagMaxTimeoutInSeconds int
+	flagOutputJson          bool
 	errorMessage            string
 )
 
@@ -56,6 +61,9 @@ func checkedArguments(flagUrl *string) {
 	// Timeout
 	flag.IntVar(&flagMaxTimeoutInSeconds, "max-response-timeout", int(url.DefaultHttpGetTimeout.Seconds()), "Maximum timeout wait on requests in seconds")
 	flag.IntVar(&flagMaxTimeoutInSeconds, "mrt", int(url.DefaultHttpGetTimeout.Seconds()), "Maximum timeout wait on requests in seconds")
+	// Output as json flag
+	flag.BoolVar(&flagOutputJson, "json", false, "Export output as json format")
+	flag.BoolVar(&flagOutputJson, "j", false, "Export output as json format")
 
 	// setting own print function, to handle positonal arguments
 	flag.Usage = printUsage
@@ -107,5 +115,12 @@ func processUrl(inputUrl string) {
 
 	url.SetHttpGetTimeoutSeconds(time.Duration(flagMaxTimeoutInSeconds) * time.Second)
 	urlReports := report.CustomizableCreateUrlReport(httpUrls, int(flagMaxParallelRequests))
-	fmt.Println(urlReports.FullString())
+
+	switch {
+	case flagOutputJson:
+		fmt.Println(urlReports.Json())
+	default:
+		fmt.Println(urlReports.FullString())
+	}
+
 }
