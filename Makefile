@@ -23,8 +23,12 @@ run:
 test:
 	go test ./...
 
-test_coverage:
+cov:
 	go test ./... -coverprofile=coverage.out
+
+# Creates latest coverage report and opens it in the browser
+covd:
+	go test ./... -coverprofile=coverage.out && go tool cover -html=coverage.out
 
 dep:
 	go mod download
