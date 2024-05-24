@@ -3,6 +3,7 @@ package report
 import (
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"testing"
 	"time"
 
@@ -22,7 +23,7 @@ func TestCreateUrlReport(t *testing.T) {
 		fakeServer := createDelayServerWithStatus(0*time.Second, 200)
 		defer fakeServer.Close()
 		inputUrls := []string{fakeServer.URL}
-		expectedUrlStatus := []url.UrlStatus{{fakeServer.URL, true, http.StatusText(200)}}
+		expectedUrlStatus := []url.UrlStatus{{Url: fakeServer.URL, IsReachable: true, StatusMessage: http.StatusText(200)}}
 		r := CreateUrlReport(inputUrls)
 		assertReport(t, r, expectedUrlStatus)
 	})
@@ -33,7 +34,10 @@ func TestCreateUrlReport(t *testing.T) {
 		fakeServer2 := createDelayServerWithStatus(0*time.Second, 404)
 		defer fakeServer2.Close()
 		inputUrls := []string{fakeServer.URL, fakeServer2.URL}
-		expectedUrlStatus := []url.UrlStatus{{fakeServer.URL, true, ""}, {fakeServer2.URL, false, ""}}
+		expectedUrlStatus := []url.UrlStatus{
+			{Url: fakeServer.URL, IsReachable: true, StatusMessage: ""},
+			{Url: fakeServer2.URL, IsReachable: false, StatusMessage: ""},
+		}
 		r := CreateUrlReport(inputUrls)
 		assertReport(t, r, expectedUrlStatus)
 	})
@@ -60,6 +64,55 @@ func TestCreateUrlReport(t *testing.T) {
 			t.Errorf("Runtime was to fast with %v expected more than %v", urlReport.Runtime, minRuntime)
 		}
 	})
+}
+
+func TestAddMetaData(t *testing.T) {
+	t.Run("Create with meta data", func(t *testing.T) {
+		report := UrlReport{
+			ExecutedAt: time.Now(),
+			Runtime:    time.Second,
+			MetaData:   map[string]string{"test": "testvalue"},
+			UrlStatus:  []url.UrlStatus{},
+		}
+		want := map[string]string{"test": "testvalue"}
+
+		if !reflect.DeepEqual(want, report.MetaData) {
+			t.Errorf("got %v expected %v", report.MetaData, want)
+		}
+	})
+	t.Run("Add MetaData afterwards", func(t *testing.T) {
+		report := NewUrlReport(
+			time.Now(),
+			time.Second,
+			[]url.UrlStatus{},
+		)
+		key := "test2"
+		value := "new test value"
+		want := map[string]string{key: value}
+		report.AddMetaData(key, value)
+
+		if !reflect.DeepEqual(want, report.MetaData) {
+			t.Errorf("got %v expected %v", report.MetaData, want)
+		}
+	})
+
+	t.Run("Overwrite MetaData", func(t *testing.T) {
+		report := UrlReport{
+			time.Now(),
+			time.Second,
+			map[string]string{"test2": "first set data"},
+			[]url.UrlStatus{},
+		}
+		key := "test2"
+		value := "new test value"
+		want := map[string]string{key: value}
+		report.AddMetaData(key, value)
+
+		if !reflect.DeepEqual(want, report.MetaData) {
+			t.Errorf("got %v expected %v", report.MetaData, want)
+		}
+	})
+
 }
 
 func assertReport(t *testing.T, r UrlReport, expectedUrlStatus []url.UrlStatus) {

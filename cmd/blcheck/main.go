@@ -110,11 +110,11 @@ func processUrl(inputUrl string) {
 		os.Exit(2)
 	}
 	httpUrls := url.ExtractHttpUrls(body)
-	fmt.Printf("parsing done in %.4f seconds\n", time.Since(processStarttime).Seconds())
-	fmt.Printf("extracted %d unique urls, starting url report scan\n", len(httpUrls))
+	parsing_duration := time.Since(processStarttime).String()
 
 	url.SetHttpGetTimeoutSeconds(time.Duration(flagMaxTimeoutInSeconds) * time.Second)
 	urlReports := report.CustomizableCreateUrlReport(httpUrls, int(flagMaxParallelRequests))
+	urlReports.AddMetaData("initial_parsing_duration", parsing_duration)
 
 	switch {
 	case flagOutputJson:

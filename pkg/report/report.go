@@ -14,9 +14,20 @@ const MaxNumParallelQueries = 20
 
 // Information about a url check on a single webpage.
 type UrlReport struct {
-	ExecutedAt time.Time       `json:"executed_at"`
-	Runtime    time.Duration   `json:"runtime"`
-	UrlStatus  []url.UrlStatus `json:"url_status"`
+	ExecutedAt time.Time         `json:"executed_at"`
+	Runtime    time.Duration     `json:"runtime"`
+	MetaData   map[string]string `json:"meta_data"`
+	UrlStatus  []url.UrlStatus   `json:"url_status"`
+}
+
+func NewUrlReport(executedAt time.Time, runtime time.Duration, urlStatus []url.UrlStatus) UrlReport {
+	return UrlReport{
+		ExecutedAt: executedAt,
+		Runtime:    runtime,
+		MetaData:   map[string]string{},
+		UrlStatus:  urlStatus,
+	}
+
 }
 
 // String representation auf UrlReport.
@@ -28,11 +39,22 @@ func (r UrlReport) String() string {
 func (r UrlReport) FullString() string {
 	var builder strings.Builder
 	builder.WriteString(r.String() + "\n")
+	if len(r.MetaData) > 0 {
+		builder.WriteString("Meta information:\n")
+		for k, v := range r.MetaData {
+			builder.WriteString(fmt.Sprintf("%s: %s\n", k, v))
+		}
+	}
 	for i, s := range r.UrlStatus {
 		index := fmt.Sprintf("#%d", i+1)
 		builder.WriteString(index + "\t" + s.String() + "\n")
 	}
 	return builder.String()
+}
+
+// Add a key-value meta date for UrlReport, does overwrite exisiting MetaData keys
+func (r UrlReport) AddMetaData(key, value string) {
+	r.MetaData[key] = value
 }
 
 // Creates UrlReport from a list of given urls.
@@ -68,11 +90,11 @@ func CustomizableCreateUrlReport(urls []string, maxRoutines int) UrlReport {
 	close(resultChan)
 	wg2.Wait()
 
-	return UrlReport{
+	return NewUrlReport(
 		start,
 		time.Since(start),
 		urlStatus,
-	}
+	)
 }
 
 // Go routine to gather UrlStatus from result channel.
