@@ -20,6 +20,7 @@ type UrlReport struct {
 	UrlStatus  []url.UrlStatus   `json:"url_status"`
 }
 
+// Convinience constructor
 func NewUrlReport(executedAt time.Time, runtime time.Duration, urlStatus []url.UrlStatus) UrlReport {
 	return UrlReport{
 		ExecutedAt: executedAt,
@@ -58,14 +59,14 @@ func (r UrlReport) AddMetaData(key, value string) {
 }
 
 // Creates UrlReport from a list of given urls.
-func CreateUrlReport(urls []string) UrlReport {
+func CreateUrlReport(urls []url.ExtractedUrl) UrlReport {
 	return CustomizableCreateUrlReport(urls, MaxNumParallelQueries)
 }
 
 // Creates UrlReport from a list of given urls with max. of parallel request routines.
-func CustomizableCreateUrlReport(urls []string, maxRoutines int) UrlReport {
+func CustomizableCreateUrlReport(urls []url.ExtractedUrl, maxRoutines int) UrlReport {
 	start := time.Now()
-	inputChan := make(chan string)
+	inputChan := make(chan url.ExtractedUrl)
 	resultChan := make(chan url.UrlStatus)
 	urlStatus := []url.UrlStatus{}
 
@@ -106,7 +107,7 @@ func gatherResults(wg2 *sync.WaitGroup, resultChan chan url.UrlStatus, urlStatus
 }
 
 // Go routine to get run url string by UrlIsAvailable to get UrlStatus.
-func checkUrlHandler(inputChan chan string, resultChan chan url.UrlStatus, wg *sync.WaitGroup) {
+func checkUrlHandler(inputChan chan url.ExtractedUrl, resultChan chan url.UrlStatus, wg *sync.WaitGroup) {
 	defer wg.Done()
 	for inputUrl := range inputChan {
 		status := url.UrlIsAvailable(inputUrl)

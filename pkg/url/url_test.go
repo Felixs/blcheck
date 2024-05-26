@@ -130,60 +130,66 @@ func TestInferHttpsPrefix(t *testing.T) {
 }
 
 func TestExtractHttpUrls(t *testing.T) {
+	t.Run("Check basic unique url extraction", func(t *testing.T) {
+		cases := []struct {
+			name string
+			body string
+			want []ExtractedUrl
+		}{
+			{
+				"basic one url in body",
+				`<html><body><a href="http://www.google.de">test</a></body></html>`,
+				[]ExtractedUrl{{"http://www.google.de", 1}},
+			}, {
+				"No urls found",
+				`<html><body><a href="google.de">test</a></body></html>`,
+				[]ExtractedUrl{},
+			}, {
+				"two unique urls found",
+				`<html><body><a href="google.de">https://heise.de http://www.google.de</a></body></html>`,
+				[]ExtractedUrl{
+					{"https://heise.de", 1},
+					{"http://www.google.de", 1},
+				},
+			}, {
+				"Only non http urls",
+				`<html><body><a href="mailto://google.de">file://heise.de xmpp://www.google.de</a></body></html>`,
+				[]ExtractedUrl{},
+			}, {
+				"Remove doubled urls",
+				`<html><body><a href="http://www.google.de">http://www.google.de</a></body></html>`,
+				[]ExtractedUrl{{"http://www.google.de", 2}},
+			}, {
+				"Lowercase and uppercase have to be ignored, cast everything to lowercast",
+				`<html><body><a href="http://www.GOOGLE.de">http://www.google.de</a></body></html>`,
+				[]ExtractedUrl{{"http://www.google.de", 2}},
+			}, {
+				"Cut ancor tags on links",
+				`<html><body><a href="http://www.google.de/#very-good-link">http://www.google.de/</a></body></html>`,
+				[]ExtractedUrl{{"http://www.google.de", 2}},
+			}, {
+				"Remove tailing / on urls",
+				`<html><body><a href="http://www.google.de/">hello</a></body></html>`,
+				[]ExtractedUrl{{"http://www.google.de", 1}},
+			},
+		}
+		for _, tt := range cases {
+			t.Run(tt.name, func(t *testing.T) {
+				got := ExtractHttpUrls(tt.body)
 
-	cases := []struct {
-		name string
-		body string
-		want []string
-	}{
-		{
-			"basic one url in body",
-			`<html><body><a href="http://www.google.de">test</a></body></html>`,
-			[]string{"http://www.google.de"},
-		}, {
-			"No urls found",
-			`<html><body><a href="google.de">test</a></body></html>`,
-			[]string{},
-		}, {
-			"No urls found",
-			`<html><body><a href="google.de">https://heise.de http://www.google.de</a></body></html>`,
-			[]string{"https://heise.de", "http://www.google.de"},
-		}, {
-			"Only non http urls",
-			`<html><body><a href="mailto://google.de">file://heise.de xmpp://www.google.de</a></body></html>`,
-			[]string{},
-		}, {
-			"Remove doubled urls",
-			`<html><body><a href="http://www.google.de">http://www.google.de</a></body></html>`,
-			[]string{"http://www.google.de"},
-		}, {
-			"Lowercase and uppercase have to be ignored, cast everything to lowercast",
-			`<html><body><a href="http://www.GOOGLE.de">http://www.google.de</a></body></html>`,
-			[]string{"http://www.google.de"},
-		}, {
-			"Cut ancor tags on links",
-			`<html><body><a href="http://www.google.de/#very-good-link">http://www.google.de/</a></body></html>`,
-			[]string{"http://www.google.de"},
-		}, {
-			"Remove tailing / on urls",
-			`<html><body><a href="http://www.google.de/">hello</a></body></html>`,
-			[]string{"http://www.google.de"},
-		},
-	}
-	for _, tt := range cases {
-		t.Run(tt.name, func(t *testing.T) {
-			got := ExtractHttpUrls(tt.body)
-
-			if len(got) != len(tt.want) {
-				t.Fatalf("expected %v and %v to have the same length", tt.want, got)
-			}
-			for _, wantElement := range tt.want {
-				if !slices.Contains(got, wantElement) {
-					t.Errorf("expected %v to include want %s", got, wantElement)
+				if len(got) != len(tt.want) {
+					t.Fatalf("expected %v and %v to have the same length", tt.want, got)
 				}
-			}
-		})
-	}
+				for _, wantElement := range tt.want {
+					if !slices.Contains(got, wantElement) {
+						t.Errorf("expected %v to include want %v", got, wantElement)
+					}
+				}
+			})
+		}
+
+	})
+
 }
 
 func TestUrlIsAvailable(t *testing.T) {
@@ -194,8 +200,8 @@ func TestUrlIsAvailable(t *testing.T) {
 			w.WriteHeader(serverStatusCode)
 		}))
 		defer fakeServer.Close()
-		got := UrlIsAvailable(fakeServer.URL)
-		want := UrlStatus{fakeServer.URL, true, http.StatusText(serverStatusCode)}
+		got := UrlIsAvailable(ExtractedUrl{fakeServer.URL, 1})
+		want := UrlStatus{fakeServer.URL, true, http.StatusText(serverStatusCode), 1}
 
 		if got != want {
 			t.Errorf("got %v want %v", got, want)
@@ -208,8 +214,8 @@ func TestUrlIsAvailable(t *testing.T) {
 			w.WriteHeader(serverStatusCode)
 		}))
 		defer fakeServer.Close()
-		got := UrlIsAvailable(fakeServer.URL)
-		want := UrlStatus{fakeServer.URL, false, http.StatusText(serverStatusCode)}
+		got := UrlIsAvailable(ExtractedUrl{fakeServer.URL, 2})
+		want := UrlStatus{fakeServer.URL, false, http.StatusText(serverStatusCode), 2}
 
 		if got != want {
 			t.Errorf("got %v want %v", got, want)
@@ -226,8 +232,8 @@ func TestUrlIsAvailable(t *testing.T) {
 		}))
 		defer fakeServer.Close()
 		SetHttpGetTimeoutSeconds(crawlerTimeout)
-		got := UrlIsAvailable(fakeServer.URL)
-		want := UrlStatus{fakeServer.URL, false, createTimeoutMessage(crawlerTimeout)}
+		got := UrlIsAvailable(ExtractedUrl{fakeServer.URL, 3})
+		want := UrlStatus{fakeServer.URL, false, createTimeoutMessage(crawlerTimeout), 3}
 		SetHttpGetTimeoutSeconds(DefaultHttpGetTimeout)
 		if got != want {
 			t.Errorf("got %v want %v", got, want)

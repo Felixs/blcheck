@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"slices"
 	"strings"
 	"time"
 
@@ -34,11 +33,18 @@ type UrlStatus struct {
 	Url           string `json:"url"`
 	IsReachable   bool   `json:"is_reachable"`
 	StatusMessage string `json:"status_message"`
+	NumOccured    int    `json:"num_occured"`
 }
 
 // String representation of a UrlStatus.
 func (s UrlStatus) String() string {
-	return fmt.Sprintf("%v\t%s\t%s", s.IsReachable, s.StatusMessage, s.Url)
+	return fmt.Sprintf("%v\t%s\t%s\t%d", s.IsReachable, s.StatusMessage, s.Url, s.NumOccured)
+}
+
+// Contains parsing info about url that is to check
+type ExtractedUrl struct {
+	Url        string
+	NumOccured int
 }
 
 // Checks if given url string seems to be valid.
@@ -78,29 +84,31 @@ func GetBodyFromUrl(inputUrl string) (body string, err error) {
 }
 
 // Extracts any uniqe http(s) url that can be found from a given string.
-func ExtractHttpUrls(body string) (hrefs []string) {
+func ExtractHttpUrls(body string) (hrefs []ExtractedUrl) {
 	precompiledUrlRegex := xurls.Strict()
 	strictUrls := precompiledUrlRegex.FindAllString(body, -1)
 
 	filteredUrls := filterNoneHttpUrls(strictUrls)
-	slices.Sort(filteredUrls)
 	return filteredUrls
 }
 
 // Filters down to all unique http urls
-func filterNoneHttpUrls(strictUrls []string) []string {
-	httpUrls := []string{}
+func filterNoneHttpUrls(strictUrls []string) []ExtractedUrl {
+	httpUrls := make(map[string]int)
 	for _, httpUrl := range strictUrls {
 		if strings.HasPrefix(httpUrl, "http") {
 			httpUrl = strings.ToLower(httpUrl)
 			httpUrl = strings.SplitN(httpUrl, "#", 2)[0]
 			httpUrl = strings.TrimSuffix(httpUrl, "/")
-			if !slices.Contains(httpUrls, httpUrl) {
-				httpUrls = append(httpUrls, httpUrl)
-			}
+			httpUrls[httpUrl] += 1
 		}
 	}
-	return httpUrls
+	extractedUrls := []ExtractedUrl{}
+	for k, v := range httpUrls {
+		extractedUrls = append(extractedUrls, ExtractedUrl{k, v})
+	}
+
+	return extractedUrls
 }
 
 // Given string is checked for prefixing http(s) protocoll and gets added https if needed.
@@ -112,20 +120,21 @@ func InferHttpsPrefix(inputUrl *string) {
 }
 
 // Trys a Get request on url and if status code = 200 and within timeout of HttpGetTimeout. Otherwise false.
-func UrlIsAvailable(inputUrl string) (available UrlStatus) {
+func UrlIsAvailable(inputUrl ExtractedUrl) (available UrlStatus) {
 	return ConfigurableUrlIsAvailable(inputUrl, HttpGetTimeout)
 }
 
 // Trys a Get request on url and if status code = 200 and within timeout returns true. Otherwise false.
-func ConfigurableUrlIsAvailable(inputUrl string, timeout time.Duration) (available UrlStatus) {
+func ConfigurableUrlIsAvailable(inputUrl ExtractedUrl, timeout time.Duration) (available UrlStatus) {
 	select {
 	case r := <-checkUrl(inputUrl):
 		return r
 	case <-time.After(timeout):
 		return UrlStatus{
-			Url:           inputUrl,
+			Url:           inputUrl.Url,
 			IsReachable:   false,
 			StatusMessage: createTimeoutMessage(timeout),
+			NumOccured:    inputUrl.NumOccured,
 		}
 	}
 }
@@ -136,13 +145,14 @@ func createTimeoutMessage(timeout time.Duration) string {
 }
 
 // Creates chan that handels url get returns.
-func checkUrl(inputUrl string) chan UrlStatus {
+func checkUrl(inputUrl ExtractedUrl) chan UrlStatus {
 	ch := make(chan UrlStatus, 1)
 	go func() {
 		isReachable := false
 		statusMessage := "Unknown"
+		numOccured := inputUrl.NumOccured
 		//FIXME: maybe use http.Head(inputUrl)?
-		resp, err := http.Get(inputUrl)
+		resp, err := http.Get(inputUrl.Url)
 		if err != nil {
 			statusMessage = err.Error()
 		} else {
@@ -150,7 +160,7 @@ func checkUrl(inputUrl string) chan UrlStatus {
 			isReachable = (resp.StatusCode == http.StatusOK)
 		}
 
-		ch <- UrlStatus{Url: inputUrl, IsReachable: isReachable, StatusMessage: statusMessage}
+		ch <- UrlStatus{Url: inputUrl.Url, IsReachable: isReachable, StatusMessage: statusMessage, NumOccured: numOccured}
 	}()
 	return ch
 }

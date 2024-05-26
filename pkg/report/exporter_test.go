@@ -18,6 +18,7 @@ func TestJson(t *testing.T) {
 				Url:           "https://www.google.de",
 				IsReachable:   true,
 				StatusMessage: "OK",
+				NumOccured:    1,
 			},
 		},
 	}
@@ -29,7 +30,8 @@ func TestJson(t *testing.T) {
     "url_status": [{
         "url": "https://www.google.de",
         "is_reachable": true,
-        "status_message": "OK"
+        "status_message": "OK",
+        "num_occured": 1
     }]
 }`
 	want = strings.ReplaceAll(want, " ", "")
