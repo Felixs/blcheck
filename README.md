@@ -41,6 +41,28 @@ Usage: blcheck <URL>
         Displays version of blcheck
 ```
 
+## Example output*
+```shell
+./blcheck www.google.com
+2024/05/26 20:37:49 Checking URL:  www.google.com
+2024/05/26 20:37:49 infered https:// prefix, because given url did not have an protocol
+Started: 2024-05-26 20:37:49.796592218 +0200 CEST m=+0.487706897 , took: 657.857335ms, urlcount: 12
+Meta information:
+initial_parsing_duration: 487.463374ms
+#1      true    OK      https://www.google.com/imghp      1
+#2      true    OK      https://www.google.com/setprefdomain        1
+#3      true    OK      https://www.youtube.com 1
+#4      true    OK      https://news.google.com 1
+#5      true    OK      https://maps.google.de/maps        1
+#6      true    OK      https://play.google.com   1
+#7      true    OK      https://accounts.google.com/servicelogin  1
+#8      false   Not Found       http://schema.org/webpage       1
+#9      true    OK      http://www.google.de/history/optout       1
+#10     true    OK      https://www.google.de/intl/de/about/products     1
+#11     true    OK      https://mail.google.com/mail    1
+#12     true    OK      https://drive.google.com        1
+```
+(*) removed get parameter outputs from displayed urls
 
 ## Reliability
 Make sure to only use this on your own websites or websites you have permission to check. This tool is not meant to be used for malicious purposes. It tries to use sane and safe defaults, but you should always be careful when running tools like this. **Use at own risk!**
