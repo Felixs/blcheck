@@ -29,6 +29,9 @@ Usage: blcheck <URL>
   -c    Export output as csv format (default if no other format given) (default true)
   -csv
         Export output as csv format (default if no other format given) (default true)
+  -d    Only gets urls from initial webpage and does not check the status of other urls
+  -dry
+        Only gets urls from initial webpage and does not check the status of other urls
   -ex string
         Parsed urls need to not contain this string to get checked
   -exclude string

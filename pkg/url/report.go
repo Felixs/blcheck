@@ -58,6 +58,17 @@ func (r UrlReport) AddMetaData(key, value string) {
 	r.MetaData[key] = value
 }
 
+// Creates a UrlReport without checking the urls for responses
+func CreateDryReport(urls []ExtractedUrl) UrlReport {
+	start := time.Now()
+	results := []UrlStatus{}
+	for _, e := range urls {
+		newResult := UrlStatusFromExtractedUrl(e, false, "Dry run", 0, 0)
+		results = append(results, newResult)
+	}
+	return NewUrlReport(start, time.Since(start), results)
+}
+
 // Creates UrlReport from a list of given urls.
 func CreateUrlReport(urls []ExtractedUrl) UrlReport {
 	return CustomizableCreateUrlReport(urls, MaxNumParallelQueries)

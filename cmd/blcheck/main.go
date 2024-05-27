@@ -30,6 +30,10 @@ Usage: blcheck <URL>
 -exclude
 
 	Parsed urls need to not contain this string to get checked
+
+-dry
+
+	Only gets urls from initial webpage and does not check the status of other urls
 */
 package main
 
@@ -45,15 +49,21 @@ import (
 const version = "0.0.2"
 
 var (
-	flagVersion             bool
-	flagUrl                 string
+	// Tool comandline flags
+	flagOutputJson    bool
+	flagOutputCsv     = true
+	flagVersion       bool
+	flagExecuteDryRun = false
+
+	flagUrl        string
+	flagUrlInclude string
+	flagUrlExclude string
+
 	flagMaxParallelRequests int
 	flagMaxTimeoutInSeconds int
-	flagOutputJson          bool
-	flagOutputCsv           = true
-	flagUrlInclude          string
-	flagUrlExclude          string
-	errorMessage            string
+
+	// Error message on flag errors/missmatch
+	errorMessage string
 )
 
 // Blcheck entry point.
@@ -86,6 +96,10 @@ func checkedArguments(flagUrl *string) {
 	// Exclude flag for which string can not be present in url to check
 	flag.StringVar(&flagUrlExclude, "exclude", "", "Parsed urls need to not contain this string to get checked")
 	flag.StringVar(&flagUrlExclude, "ex", "", "Parsed urls need to not contain this string to get checked")
+	// Flag if tool should run in dry mode, only getting links from initial webpage
+	flag.BoolVar(&flagExecuteDryRun, "dry", false, "Only gets urls from initial webpage and does not check the status of other urls")
+	flag.BoolVar(&flagExecuteDryRun, "d", false, "Only gets urls from initial webpage and does not check the status of other urls")
+
 	// setting own print function, to handle positonal arguments
 	flag.Usage = printUsage
 	flag.Parse()
@@ -144,9 +158,14 @@ func processUrl(inputUrl string) {
 	}
 
 	parsing_duration := time.Since(processStarttime).String()
-
 	url.SetHttpGetTimeoutSeconds(time.Duration(flagMaxTimeoutInSeconds) * time.Second)
-	urlReports := url.CustomizableCreateUrlReport(httpUrls, int(flagMaxParallelRequests))
+
+	var urlReports url.UrlReport
+	if flagExecuteDryRun {
+		urlReports = url.CreateDryReport(httpUrls)
+	} else {
+		urlReports = url.CustomizableCreateUrlReport(httpUrls, int(flagMaxParallelRequests))
+	}
 	urlReports.AddMetaData("initial_parsing_duration", parsing_duration)
 	urlReports.AddMetaData("total_extracted_urls", fmt.Sprint(numberUniqueUrls))
 	fmt.Println()

@@ -75,6 +75,17 @@ func TestCreateUrlReport(t *testing.T) {
 	})
 }
 
+func TestCreateDryReport(t *testing.T) {
+	t.Run("Create with one entires", func(t *testing.T) {
+		input := []ExtractedUrl{{Url: "google.de", NumOccured: 1}}
+		got := CreateDryReport(input)
+
+		if got.UrlStatus[0].Url != "google.de" && got.UrlStatus[0].NumOccured != 1 {
+			t.Errorf("Got wrong output for url or numOccured in dry report")
+		}
+	})
+}
+
 func TestAddMetaData(t *testing.T) {
 	t.Run("Create with meta data", func(t *testing.T) {
 		report := UrlReport{
