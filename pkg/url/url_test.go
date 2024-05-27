@@ -3,6 +3,7 @@ package url
 import (
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"slices"
 	"testing"
 )
@@ -189,4 +190,98 @@ func TestIsUrlValid(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestFilterByExclude(t *testing.T) {
+
+	t.Run("exclude on an empty list", func(t *testing.T) {
+		input := []ExtractedUrl{}
+		got := FilterByExclude(input, "google")
+		want := []ExtractedUrl{}
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("got %v, want %v", got, want)
+		}
+	})
+
+	t.Run("exclude on a list with one entry that needs to excludes", func(t *testing.T) {
+		input := []ExtractedUrl{{Url: "www.google.de", NumOccured: 99}}
+		got := FilterByExclude(input, "google")
+		want := []ExtractedUrl{}
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("got %v, want %v", got, want)
+		}
+	})
+
+	t.Run("exclude on a list with one entry that needs to stay after exclude", func(t *testing.T) {
+		input := []ExtractedUrl{{Url: "www.google.de", NumOccured: 99}}
+		got := FilterByExclude(input, "heise")
+		want := []ExtractedUrl{{Url: "www.google.de", NumOccured: 99}}
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("got %v, want %v", got, want)
+		}
+	})
+	t.Run("exclude on a list with two entry that needs to excludes", func(t *testing.T) {
+		input := []ExtractedUrl{{Url: "http://www.google.de", NumOccured: 99}, {Url: "http://www.google.de/help", NumOccured: 99}}
+		got := FilterByExclude(input, "google")
+		want := []ExtractedUrl{}
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("got %v, want %v", got, want)
+		}
+	})
+
+	t.Run("exclude on a list with two entries one needs to stay after exclude", func(t *testing.T) {
+		input := []ExtractedUrl{{Url: "www.google.de", NumOccured: 99}, {Url: "www.heise.de", NumOccured: 9}}
+		got := FilterByExclude(input, "heise")
+		want := []ExtractedUrl{{Url: "www.google.de", NumOccured: 99}}
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("got %v, want %v", got, want)
+		}
+	})
+}
+
+func TestFilterByInclude(t *testing.T) {
+
+	t.Run("include on an empty list", func(t *testing.T) {
+		input := []ExtractedUrl{}
+		got := FilterByInclude(input, "google")
+		want := []ExtractedUrl{}
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("got %v, want %v", got, want)
+		}
+	})
+
+	t.Run("include on a list with one entry that needs to be excluded", func(t *testing.T) {
+		input := []ExtractedUrl{{Url: "www.google.de", NumOccured: 99}}
+		got := FilterByInclude(input, "heise")
+		want := []ExtractedUrl{}
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("got %v, want %v", got, want)
+		}
+	})
+
+	t.Run("include on a list with one entry that needs to stay after inclusion", func(t *testing.T) {
+		input := []ExtractedUrl{{Url: "www.google.de", NumOccured: 99}}
+		got := FilterByInclude(input, "google")
+		want := []ExtractedUrl{{Url: "www.google.de", NumOccured: 99}}
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("got %v, want %v", got, want)
+		}
+	})
+	t.Run("include on a list with two entry that needs to be included", func(t *testing.T) {
+		input := []ExtractedUrl{{Url: "http://www.google.de", NumOccured: 99}, {Url: "http://www.google.de/help", NumOccured: 99}}
+		got := FilterByInclude(input, "google")
+		want := []ExtractedUrl{{Url: "http://www.google.de", NumOccured: 99}, {Url: "http://www.google.de/help", NumOccured: 99}}
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("got %v, want %v", got, want)
+		}
+	})
+
+	t.Run("include on a list with two entries one needs to stay", func(t *testing.T) {
+		input := []ExtractedUrl{{Url: "www.google.de", NumOccured: 99}, {Url: "www.heise.de", NumOccured: 9}}
+		got := FilterByInclude(input, "google")
+		want := []ExtractedUrl{{Url: "www.google.de", NumOccured: 99}}
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("got %v, want %v", got, want)
+		}
+	})
 }

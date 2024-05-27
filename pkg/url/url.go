@@ -23,6 +23,28 @@ type ExtractedUrl struct {
 	NumOccured int
 }
 
+// Filter a list of ExtractedUrls with a given string excluding
+func FilterByExclude(extractedUrls []ExtractedUrl, exclude string) []ExtractedUrl {
+	resultUrls := []ExtractedUrl{}
+	for _, e := range extractedUrls {
+		if !strings.Contains(e.Url, exclude) {
+			resultUrls = append(resultUrls, e)
+		}
+	}
+	return resultUrls
+}
+
+// Filter a list of ExtractedUrls with a given string including
+func FilterByInclude(extractedUrls []ExtractedUrl, include string) []ExtractedUrl {
+	resultUrls := []ExtractedUrl{}
+	for _, e := range extractedUrls {
+		if strings.Contains(e.Url, include) {
+			resultUrls = append(resultUrls, e)
+		}
+	}
+	return resultUrls
+}
+
 // Checks if given url string seems to be valid.
 func IsUrlValid(inputUrl string) (isValid bool) {
 	urlData, err := url.Parse(inputUrl)

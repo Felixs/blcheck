@@ -26,9 +26,17 @@ make build
 blcheck (0.0.2)- A simple tool to check which links on your websites are broken.
 
 Usage: blcheck <URL>
-  -c    Export output as csv format (default if no other format given)
+  -c    Export output as csv format (default if no other format given) (default true)
   -csv
-        Export output as csv format (default if no other format given)
+        Export output as csv format (default if no other format given) (default true)
+  -ex string
+        Parsed urls need to not contain this string to get checked
+  -exclude string
+        Parsed urls need to not contain this string to get checked
+  -in string
+        Parsed urls need to contain this string to get checked
+  -include string
+        Parsed urls need to contain this string to get checked
   -j    Export output as json format
   -json
         Export output as json format

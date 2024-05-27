@@ -19,9 +19,17 @@ Usage: blcheck <URL>
 
 	Export output as json format
 
-- csv
+-csv
 
 	Export output as csv format (default if no other format given)
+
+-include
+
+	Parsed urls need to contain this string to get checked
+
+-exclude
+
+	Parsed urls need to not contain this string to get checked
 */
 package main
 
@@ -43,6 +51,8 @@ var (
 	flagMaxTimeoutInSeconds int
 	flagOutputJson          bool
 	flagOutputCsv           = true
+	flagUrlInclude          string
+	flagUrlExclude          string
 	errorMessage            string
 )
 
@@ -70,7 +80,12 @@ func checkedArguments(flagUrl *string) {
 	// Output as csv flag
 	flag.BoolVar(&flagOutputCsv, "csv", true, "Export output as csv format (default if no other format given)")
 	flag.BoolVar(&flagOutputCsv, "c", true, "Export output as csv format (default if no other format given)")
-
+	// Include flag for which string needs to be present in url to check
+	flag.StringVar(&flagUrlInclude, "include", "", "Parsed urls need to contain this string to get checked")
+	flag.StringVar(&flagUrlInclude, "in", "", "Parsed urls need to contain this string to get checked")
+	// Exclude flag for which string can not be present in url to check
+	flag.StringVar(&flagUrlExclude, "exclude", "", "Parsed urls need to not contain this string to get checked")
+	flag.StringVar(&flagUrlExclude, "ex", "", "Parsed urls need to not contain this string to get checked")
 	// setting own print function, to handle positonal arguments
 	flag.Usage = printUsage
 	flag.Parse()
@@ -117,12 +132,23 @@ func processUrl(inputUrl string) {
 		os.Exit(2)
 	}
 	httpUrls := url.ExtractHttpUrls(body)
+	numberUniqueUrls := len(httpUrls)
+
+	// check for exclusion
+	if flagUrlExclude != "" {
+		httpUrls = url.FilterByExclude(httpUrls, flagUrlExclude)
+	}
+	// check for inclusion
+	if flagUrlInclude != "" {
+		httpUrls = url.FilterByInclude(httpUrls, flagUrlInclude)
+	}
+
 	parsing_duration := time.Since(processStarttime).String()
 
 	url.SetHttpGetTimeoutSeconds(time.Duration(flagMaxTimeoutInSeconds) * time.Second)
 	urlReports := url.CustomizableCreateUrlReport(httpUrls, int(flagMaxParallelRequests))
 	urlReports.AddMetaData("initial_parsing_duration", parsing_duration)
-	urlReports.AddMetaData("total_extracted_urls", fmt.Sprint(len(httpUrls)))
+	urlReports.AddMetaData("total_extracted_urls", fmt.Sprint(numberUniqueUrls))
 	fmt.Println()
 	switch {
 	case flagOutputJson:
