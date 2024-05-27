@@ -3,7 +3,6 @@ package url
 import (
 	"net/http"
 	"net/http/httptest"
-	"reflect"
 	"slices"
 	"testing"
 )
@@ -189,15 +188,5 @@ func TestIsUrlValid(t *testing.T) {
 				t.Errorf("got %v want %v on %s", got, tt.want, tt.url)
 			}
 		})
-	}
-}
-
-func TestExtractedUrlToUrlStatus(t *testing.T) {
-	input := ExtractedUrl{Url: "www.google.de", NumOccured: 5}
-	got := input.ToUrlStatus("OK", true)
-	want := UrlStatus{Url: "www.google.de", NumOccured: 5, IsReachable: true, StatusMessage: "OK"}
-
-	if !reflect.DeepEqual(got, want) {
-		t.Errorf("got %v, want %v", got, want)
 	}
 }

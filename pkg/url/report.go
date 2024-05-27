@@ -8,7 +8,7 @@ import (
 )
 
 // Max number of parallel routines to query webserver.
-const MaxNumParallelQueries = 20
+const MaxNumParallelQueries = 5
 
 // Information about a url check on a single webpage.
 type UrlReport struct {
@@ -44,6 +44,7 @@ func (r UrlReport) FullString() string {
 			builder.WriteString(fmt.Sprintf("%s: %s\n", k, v))
 		}
 	}
+	builder.WriteString(UrlStatusHeaderString() + "\n")
 	for i, s := range r.UrlStatus {
 		index := fmt.Sprintf("#%d", i+1)
 		builder.WriteString(index + "\t" + s.String() + "\n")

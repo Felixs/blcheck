@@ -3,6 +3,7 @@ package url
 import (
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -13,17 +14,44 @@ const (
 // time to wait for an answer of webserver
 var HttpGetTimeout = DefaultHttpGetTimeout
 
+// Convinience list of all files in UrlStatus
+var urlStatusHeader = []string{"url", "is_reachable", "status_message", "content_length", "response_time", "num_occured"}
+
 // Information of a availability check on one webpage.
 type UrlStatus struct {
-	Url           string `json:"url"`
-	IsReachable   bool   `json:"is_reachable"`
-	StatusMessage string `json:"status_message"`
-	NumOccured    int    `json:"num_occured"`
+	Url           string        `json:"url"`
+	IsReachable   bool          `json:"is_reachable"`
+	StatusMessage string        `json:"status_message"`
+	ContentLength int64         `json:"content_length"`
+	ResponseTime  time.Duration `json:"response_time"`
+	NumOccured    int           `json:"num_occured"`
 }
 
 // String representation of a UrlStatus.
 func (s UrlStatus) String() string {
-	return fmt.Sprintf("%v\t%s\t%s\t%d", s.IsReachable, s.StatusMessage, s.Url, s.NumOccured)
+	return fmt.Sprintf("%s\t%v\t%s\t%d\t%s\t%d", s.Url, s.IsReachable, s.StatusMessage, s.ContentLength, s.ResponseTime, s.NumOccured)
+}
+
+// Well formed flieds header string for UrlStatus
+func UrlStatusHeaderString() string {
+	var sb strings.Builder
+	for _, s := range urlStatusHeader {
+		sb.WriteString(s)
+		sb.WriteString("\t")
+	}
+	return sb.String()
+}
+
+// Creates UrlStatus from ExtractedUrl with additional information
+func UrlStatusFromExtractedUrl(e ExtractedUrl, isReachable bool, statusMessage string, contentLength int64, responseTime time.Duration) UrlStatus {
+	return UrlStatus{
+		Url:           e.Url,
+		IsReachable:   isReachable,
+		StatusMessage: statusMessage,
+		ContentLength: contentLength,
+		ResponseTime:  responseTime,
+		NumOccured:    e.NumOccured,
+	}
 }
 
 // Overwrites module wide timeout for requests
@@ -46,6 +74,8 @@ func ConfigurableUrlIsAvailable(inputUrl ExtractedUrl, timeout time.Duration) (a
 			Url:           inputUrl.Url,
 			IsReachable:   false,
 			StatusMessage: createTimeoutMessage(timeout),
+			ContentLength: -1,
+			ResponseTime:  timeout,
 			NumOccured:    inputUrl.NumOccured,
 		}
 	}
@@ -62,14 +92,20 @@ func checkUrl(inputUrl ExtractedUrl) chan UrlStatus {
 	go func() {
 		isReachable := false
 		statusMessage := "Unknown"
-		resp, err := http.Get(inputUrl.Url)
+		var contenLength int64
+		responseTime := 0 * time.Millisecond
+		getTimerStart := time.Now()
+		resp, err := http.Head(inputUrl.Url)
 		if err != nil {
 			statusMessage = err.Error()
 		} else {
+			responseTime = time.Since(getTimerStart)
 			statusMessage = http.StatusText(resp.StatusCode)
 			isReachable = (resp.StatusCode == http.StatusOK)
+			contenLength = resp.ContentLength
+
 		}
-		ch <- inputUrl.ToUrlStatus(statusMessage, isReachable)
+		ch <- UrlStatusFromExtractedUrl(inputUrl, isReachable, statusMessage, contenLength, responseTime)
 
 	}()
 	return ch

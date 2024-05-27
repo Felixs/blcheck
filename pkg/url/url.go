@@ -23,16 +23,6 @@ type ExtractedUrl struct {
 	NumOccured int
 }
 
-// Convertion of ExtractedUrl to UrlStatus
-func (e ExtractedUrl) ToUrlStatus(statusMessage string, isReachable bool) UrlStatus {
-	return UrlStatus{
-		Url:           e.Url,
-		IsReachable:   isReachable,
-		StatusMessage: statusMessage,
-		NumOccured:    e.NumOccured,
-	}
-}
-
 // Checks if given url string seems to be valid.
 func IsUrlValid(inputUrl string) (isValid bool) {
 	urlData, err := url.Parse(inputUrl)

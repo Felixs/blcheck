@@ -5,7 +5,7 @@ Usage: blcheck <URL>
 
 -max-parallel-requests int
 
-	Setting a maximum how many requests get executed in parallel (default 20)
+	Setting a maximum how many requests get executed in parallel (default 5)
 
 -max-response-timeout int
 
@@ -18,6 +18,10 @@ Usage: blcheck <URL>
 -json
 
 	Export output as json format
+
+- csv
+
+	Export output as csv format (default if no other format given)
 */
 package main
 
@@ -39,6 +43,7 @@ var (
 	flagMaxParallelRequests int
 	flagMaxTimeoutInSeconds int
 	flagOutputJson          bool
+	flagOutputCsv           = true
 	errorMessage            string
 )
 
@@ -63,6 +68,9 @@ func checkedArguments(flagUrl *string) {
 	// Output as json flag
 	flag.BoolVar(&flagOutputJson, "json", false, "Export output as json format")
 	flag.BoolVar(&flagOutputJson, "j", false, "Export output as json format")
+	// Output as csv flag
+	flag.BoolVar(&flagOutputCsv, "csv", false, "Export output as csv format (default if no other format given)")
+	flag.BoolVar(&flagOutputCsv, "c", false, "Export output as csv format (default if no other format given)")
 
 	// setting own print function, to handle positonal arguments
 	flag.Usage = printUsage
@@ -118,8 +126,10 @@ func processUrl(inputUrl string) {
 	switch {
 	case flagOutputJson:
 		fmt.Println(urlReports.Json())
-	default:
+	case flagOutputCsv:
 		fmt.Println(urlReports.FullString())
+	default:
+		fmt.Println("No output format was chosen, that should never happen. How did you do that?")
 	}
 
 }

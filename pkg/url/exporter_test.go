@@ -16,6 +16,8 @@ func TestJson(t *testing.T) {
 				Url:           "https://www.google.de",
 				IsReachable:   true,
 				StatusMessage: "OK",
+				ContentLength: 1000,
+				ResponseTime:  5 * time.Second,
 				NumOccured:    1,
 			},
 		},
@@ -29,6 +31,8 @@ func TestJson(t *testing.T) {
         "url": "https://www.google.de",
         "is_reachable": true,
         "status_message": "OK",
+        "content_length": 1000,
+        "response_time": "5s",
         "num_occured": 1
     }]
 }`
@@ -49,6 +53,9 @@ func TestConvertToJsonStruct(t *testing.T) {
 				Url:           "https://www.google.de",
 				IsReachable:   true,
 				StatusMessage: "OK",
+				ContentLength: 1000,
+				ResponseTime:  time.Second,
+				NumOccured:    12,
 			},
 		},
 	}
@@ -56,11 +63,14 @@ func TestConvertToJsonStruct(t *testing.T) {
 	want := JsonUrlReport{
 		ExecutedAt: "2024-01-01T00:00:00Z",
 		Runtime:    "10s",
-		UrlStatus: []UrlStatus{
+		UrlStatus: []JsonUrlStatus{
 			{
 				Url:           "https://www.google.de",
 				IsReachable:   true,
 				StatusMessage: "OK",
+				ContentLength: 1000,
+				ResponseTime:  "1s",
+				NumOccured:    12,
 			},
 		},
 	}

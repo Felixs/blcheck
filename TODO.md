@@ -14,8 +14,8 @@
 - [x] add a --help --version flag to print out help and version text
 - [x] fix basic info output for all http status codes and errors
 - [x] make http get timeout configurable with flag
-- [ ] add advances info for UrlResults like response time, content length, status code
-- [ ] create a presentable output format csv, make accessible via flag
+- [x] add advances info for UrlResults like response time, content length
+- [x] create a presentable output format csv, as default output
 - [ ] create a presentable output format html, make accessible via flag
 - [x] create a presentable output format json, make accessible via flag
 - [ ] validate programm flags for sane inputs

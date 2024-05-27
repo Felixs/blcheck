@@ -22,18 +22,22 @@ make build
 
 ## Usage output
 ```shell
+./bin/blcheck --help
 blcheck (0.0.2)- A simple tool to check which links on your websites are broken.
 
 Usage: blcheck <URL>
-  -j    Set flag to export output as json format
+  -c    Export output as csv format (default if no other format given)
+  -csv
+        Export output as csv format (default if no other format given)
+  -j    Export output as json format
   -json
-        Set flag to export output as json format
+        Export output as json format
   -max-parallel-requests int
-        Maximum number of parallel requests executed (default 20)
+        Maximum number of parallel requests executed (default 5)
   -max-response-timeout int
         Maximum timeout wait on requests in seconds (default 5)
   -mpr int
-        Maximum number of parallel requests executed (default 20)
+        Maximum number of parallel requests executed (default 5)
   -mrt int
         Maximum timeout wait on requests in seconds (default 5)
   -v    Displays version of blcheck
@@ -43,7 +47,7 @@ Usage: blcheck <URL>
 
 ## Example output*
 ```shell
-./blcheck www.google.com
+./bin/blcheck www.google.com
 2024/05/26 20:37:49 Checking URL:  www.google.com
 2024/05/26 20:37:49 infered https:// prefix, because given url did not have an protocol
 Started: 2024-05-26 20:37:49.796592218 +0200 CEST m=+0.487706897 , took: 657.857335ms, urlcount: 12
