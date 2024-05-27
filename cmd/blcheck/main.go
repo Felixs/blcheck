@@ -28,7 +28,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"os"
 	"time"
 
@@ -69,8 +68,8 @@ func checkedArguments(flagUrl *string) {
 	flag.BoolVar(&flagOutputJson, "json", false, "Export output as json format")
 	flag.BoolVar(&flagOutputJson, "j", false, "Export output as json format")
 	// Output as csv flag
-	flag.BoolVar(&flagOutputCsv, "csv", false, "Export output as csv format (default if no other format given)")
-	flag.BoolVar(&flagOutputCsv, "c", false, "Export output as csv format (default if no other format given)")
+	flag.BoolVar(&flagOutputCsv, "csv", true, "Export output as csv format (default if no other format given)")
+	flag.BoolVar(&flagOutputCsv, "c", true, "Export output as csv format (default if no other format given)")
 
 	// setting own print function, to handle positonal arguments
 	flag.Usage = printUsage
@@ -103,9 +102,10 @@ Usage: blcheck <URL>
 
 // Checks url for broken links.
 func processUrl(inputUrl string) {
-	log.Println("Checking URL: ", inputUrl)
-	processStarttime := time.Now()
 	url.InferHttpsPrefix(&inputUrl)
+	fmt.Println("Checking URL: ", inputUrl)
+	processStarttime := time.Now()
+
 	if !url.IsUrlValid(inputUrl) {
 		fmt.Printf("not a valid url %s\n", inputUrl)
 		os.Exit(1)
@@ -122,7 +122,8 @@ func processUrl(inputUrl string) {
 	url.SetHttpGetTimeoutSeconds(time.Duration(flagMaxTimeoutInSeconds) * time.Second)
 	urlReports := url.CustomizableCreateUrlReport(httpUrls, int(flagMaxParallelRequests))
 	urlReports.AddMetaData("initial_parsing_duration", parsing_duration)
-
+	urlReports.AddMetaData("total_extracted_urls", fmt.Sprint(len(httpUrls)))
+	fmt.Println()
 	switch {
 	case flagOutputJson:
 		fmt.Println(urlReports.Json())
