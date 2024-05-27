@@ -6,7 +6,6 @@ import (
 	"reflect"
 	"slices"
 	"testing"
-	"time"
 )
 
 func TestGetBodyFromUrl(t *testing.T) {
@@ -142,53 +141,55 @@ func TestExtractHttpUrls(t *testing.T) {
 
 }
 
-func TestUrlIsAvailable(t *testing.T) {
+func TestIsUrlValid(t *testing.T) {
+	cases := []struct {
+		name string
+		url  string
+		want bool
+	}{
+		{
+			"valid https url",
+			"https://www.google.de",
+			true,
+		}, {
+			"valid http url",
+			"https://www.google.de",
+			true,
+		}, {
+			"valid with path",
+			"https://www.google.de/gelbeseiten",
+			true,
+		}, {
+			"invalid url",
+			"wwwgooglede",
+			false,
+		}, {
+			"missing protocol",
+			"www.google.de",
+			false,
+		}, {
+			"missing host name",
+			"https://",
+			false,
+		}, {
+			"empty string",
+			"   ",
+			false,
+		}, {
+			"no tld",
+			"https://deinemama",
+			false,
+		},
+	}
 
-	t.Run("handeling 200er results in time", func(t *testing.T) {
-		serverStatusCode := 200
-		fakeServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(serverStatusCode)
-		}))
-		defer fakeServer.Close()
-		got := UrlIsAvailable(ExtractedUrl{fakeServer.URL, 1})
-		want := UrlStatus{fakeServer.URL, true, http.StatusText(serverStatusCode), 1}
-
-		if got != want {
-			t.Errorf("got %v want %v", got, want)
-		}
-	})
-
-	t.Run("handeling none 200er results in time", func(t *testing.T) {
-		serverStatusCode := 404
-		fakeServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(serverStatusCode)
-		}))
-		defer fakeServer.Close()
-		got := UrlIsAvailable(ExtractedUrl{fakeServer.URL, 2})
-		want := UrlStatus{fakeServer.URL, false, http.StatusText(serverStatusCode), 2}
-
-		if got != want {
-			t.Errorf("got %v want %v", got, want)
-		}
-
-	})
-
-	t.Run("server need more than 5ms to respond (timeout on dunction is configurable)", func(t *testing.T) {
-		serverResponseCode := 200
-		crawlerTimeout := time.Millisecond * 5
-		fakeServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			time.Sleep(50 * time.Millisecond)
-			w.WriteHeader(serverResponseCode)
-		}))
-		defer fakeServer.Close()
-		SetHttpGetTimeoutSeconds(crawlerTimeout)
-		got := UrlIsAvailable(ExtractedUrl{fakeServer.URL, 3})
-		want := UrlStatus{fakeServer.URL, false, createTimeoutMessage(crawlerTimeout), 3}
-		SetHttpGetTimeoutSeconds(DefaultHttpGetTimeout)
-		if got != want {
-			t.Errorf("got %v want %v", got, want)
-		}
-	})
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			got := IsUrlValid(tt.url)
+			if got != tt.want {
+				t.Errorf("got %v want %v on %s", got, tt.want, tt.url)
+			}
+		})
+	}
 }
 
 func TestExtractedUrlToUrlStatus(t *testing.T) {
