@@ -20,15 +20,15 @@
 - [x] while parsing the first html content, add a counter to unique urls how often they appear
 - [x] add github action to run test on push
 - [x] move time to parse and number of urls to UrlReport meta data
+- [x] add a flag to exclude/include certain urls with regex (and the functionality ofc)
 - [ ] create a presentable output format html, make accessible via flag
 - [ ] validate programm flags for sane inputs
-- [ ] add a flag to exclude/include certain urls with regex (and the functionality ofc)
 - [ ] *experimental* add a flag to use a certain proxy server or maybe dns resolver
 - [ ] add CHANGELOG.md by autochangelog
 - [ ] add a dry run flag to check how many unique urls are found on a webpage
 - [ ] add a flag for output to only output broken links, and add a exit code that signals if broken links are found
-
 - [ ] add a method to retry timed out requests if wanted (flag)
+- [ ] check how http.Head/Get handles redirects and how it can be tested in unit tests
 
 
 # maybe features for the future
