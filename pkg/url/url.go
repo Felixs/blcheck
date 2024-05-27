@@ -2,8 +2,8 @@ package url
 
 import (
 	"errors"
+	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -94,7 +94,7 @@ func filterNoneHttpUrls(strictUrls []string) []ExtractedUrl {
 // Given string is checked for prefixing http(s) protocoll and gets added https if needed.
 func InferHttpsPrefix(inputUrl *string) {
 	if !strings.HasPrefix(*inputUrl, prefixHttps) && !strings.HasPrefix(*inputUrl, prefixHttp) {
-		log.Println("infered https:// prefix, because given url did not have an protocol")
+		fmt.Println("Infered https:// prefix, because given url did not have an protocol")
 		*inputUrl = "https://" + *inputUrl
 	}
 }

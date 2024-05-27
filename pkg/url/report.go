@@ -31,7 +31,7 @@ func NewUrlReport(executedAt time.Time, runtime time.Duration, urlStatus []UrlSt
 
 // String representation auf UrlReport.
 func (r UrlReport) String() string {
-	return fmt.Sprintf("Started: %s , took: %s, urlcount: %d", r.ExecutedAt, r.Runtime, len(r.UrlStatus))
+	return fmt.Sprintf("Started: %s , took: %s, urlcount: %d", r.ExecutedAt.Format(time.UnixDate), r.Runtime, len(r.UrlStatus))
 }
 
 // String representation auf UrlReport with all UrlStatus.
@@ -41,9 +41,10 @@ func (r UrlReport) FullString() string {
 	if len(r.MetaData) > 0 {
 		builder.WriteString("Meta information:\n")
 		for k, v := range r.MetaData {
-			builder.WriteString(fmt.Sprintf("%s: %s\n", k, v))
+			builder.WriteString(fmt.Sprintf("\t%s: %s\n", k, v))
 		}
 	}
+	builder.WriteString("\n")
 	builder.WriteString(UrlStatusHeaderString() + "\n")
 	for i, s := range r.UrlStatus {
 		index := fmt.Sprintf("#%d", i+1)

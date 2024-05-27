@@ -16,17 +16,18 @@
 - [x] make http get timeout configurable with flag
 - [x] add advances info for UrlResults like response time, content length
 - [x] create a presentable output format csv, as default output
-- [ ] create a presentable output format html, make accessible via flag
 - [x] create a presentable output format json, make accessible via flag
+- [x] while parsing the first html content, add a counter to unique urls how often they appear
+- [x] add github action to run test on push
+- [x] move time to parse and number of urls to UrlReport meta data
+- [ ] create a presentable output format html, make accessible via flag
 - [ ] validate programm flags for sane inputs
-- [x] while parsing the first html content, add a counter to uniqe urls how often they appear
 - [ ] add a flag to exclude/include certain urls with regex (and the functionality ofc)
 - [ ] *experimental* add a flag to use a certain proxy server or maybe dns resolver
 - [ ] add CHANGELOG.md by autochangelog
-- [ ] add github action to run test on push
 - [ ] add a dry run flag to check how many unique urls are found on a webpage
 - [ ] add a flag for output to only output broken links, and add a exit code that signals if broken links are found
-- [ ] move time to parse and number of urls to UrlReport meta data
+
 - [ ] add a method to retry timed out requests if wanted (flag)
 
 
