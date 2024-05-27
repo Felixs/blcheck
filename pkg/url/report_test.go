@@ -17,7 +17,7 @@ func TestCreateUrlReport(t *testing.T) {
 		}
 	})
 
-	t.Run("Check with one entry", func(t *testing.T) {
+	t.Run("Check with one entry, returns 200", func(t *testing.T) {
 		fakeServer := createDelayServerWithStatus(0*time.Second, 200)
 		defer fakeServer.Close()
 		inputUrls := []ExtractedUrl{{Url: fakeServer.URL, NumOccured: 1}}
@@ -136,7 +136,7 @@ func assertReport(t *testing.T, r UrlReport, expectedUrlStatus []UrlStatus) {
 		for _, bt := range r.UrlStatus {
 			if tt.Url == bt.Url {
 				if tt.IsReachable != bt.IsReachable {
-					t.Errorf("expected %q to be IsReachable=%v", tt.Url, tt.IsReachable)
+					t.Errorf("expected %v to be IsReachable=%v", tt, bt.IsReachable)
 				}
 				lastFound = true
 				break
