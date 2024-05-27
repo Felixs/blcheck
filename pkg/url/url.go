@@ -2,7 +2,6 @@ package url
 
 import (
 	"errors"
-	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -28,23 +27,20 @@ func SetHttpGetTimeoutSeconds(timeout time.Duration) {
 	HttpGetTimeout = timeout
 }
 
-// Information of a availability check on one webpage.
-type UrlStatus struct {
-	Url           string `json:"url"`
-	IsReachable   bool   `json:"is_reachable"`
-	StatusMessage string `json:"status_message"`
-	NumOccured    int    `json:"num_occured"`
-}
-
-// String representation of a UrlStatus.
-func (s UrlStatus) String() string {
-	return fmt.Sprintf("%v\t%s\t%s\t%d", s.IsReachable, s.StatusMessage, s.Url, s.NumOccured)
-}
-
 // Contains parsing info about url that is to check
 type ExtractedUrl struct {
 	Url        string
 	NumOccured int
+}
+
+// Convertion of ExtractedUrl to UrlStatus
+func (e ExtractedUrl) ToUrlStatus(statusMessage string, isReachable bool) UrlStatus {
+	return UrlStatus{
+		Url:           e.Url,
+		IsReachable:   isReachable,
+		StatusMessage: statusMessage,
+		NumOccured:    e.NumOccured,
+	}
 }
 
 // Checks if given url string seems to be valid.
@@ -64,16 +60,17 @@ func IsUrlValid(inputUrl string) (isValid bool) {
 
 // Tries to recieve a body with get request from url and returns it as string.
 func GetBodyFromUrl(inputUrl string) (body string, err error) {
+	// Get request to page
 	resp, err := http.Get(inputUrl)
 	if err != nil {
 		return "", err
 	}
 	defer resp.Body.Close()
-
+	// Check return status code, if not 200 return error
 	if resp.StatusCode != http.StatusOK {
 		return "", errors.New("got status that is not okay: " + resp.Status)
 	}
-
+	// Read all data from request body
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
@@ -97,8 +94,11 @@ func filterNoneHttpUrls(strictUrls []string) []ExtractedUrl {
 	httpUrls := make(map[string]int)
 	for _, httpUrl := range strictUrls {
 		if strings.HasPrefix(httpUrl, "http") {
+			// convert all chars to lowercase, easy comparision
 			httpUrl = strings.ToLower(httpUrl)
+			// remove ancor sufixes, because the only point to a part of a single website
 			httpUrl = strings.SplitN(httpUrl, "#", 2)[0]
+			// relove following '/' because they are not needed
 			httpUrl = strings.TrimSuffix(httpUrl, "/")
 			httpUrls[httpUrl] += 1
 		}
@@ -117,50 +117,4 @@ func InferHttpsPrefix(inputUrl *string) {
 		log.Println("infered https:// prefix, because given url did not have an protocol")
 		*inputUrl = "https://" + *inputUrl
 	}
-}
-
-// Trys a Get request on url and if status code = 200 and within timeout of HttpGetTimeout. Otherwise false.
-func UrlIsAvailable(inputUrl ExtractedUrl) (available UrlStatus) {
-	return ConfigurableUrlIsAvailable(inputUrl, HttpGetTimeout)
-}
-
-// Trys a Get request on url and if status code = 200 and within timeout returns true. Otherwise false.
-func ConfigurableUrlIsAvailable(inputUrl ExtractedUrl, timeout time.Duration) (available UrlStatus) {
-	select {
-	case r := <-checkUrl(inputUrl):
-		return r
-	case <-time.After(timeout):
-		return UrlStatus{
-			Url:           inputUrl.Url,
-			IsReachable:   false,
-			StatusMessage: createTimeoutMessage(timeout),
-			NumOccured:    inputUrl.NumOccured,
-		}
-	}
-}
-
-// Formats a duration as status message
-func createTimeoutMessage(timeout time.Duration) string {
-	return fmt.Sprintf("Timed out after %v", timeout)
-}
-
-// Creates chan that handels url get returns.
-func checkUrl(inputUrl ExtractedUrl) chan UrlStatus {
-	ch := make(chan UrlStatus, 1)
-	go func() {
-		isReachable := false
-		statusMessage := "Unknown"
-		numOccured := inputUrl.NumOccured
-		//FIXME: maybe use http.Head(inputUrl)?
-		resp, err := http.Get(inputUrl.Url)
-		if err != nil {
-			statusMessage = err.Error()
-		} else {
-			statusMessage = http.StatusText(resp.StatusCode)
-			isReachable = (resp.StatusCode == http.StatusOK)
-		}
-
-		ch <- UrlStatus{Url: inputUrl.Url, IsReachable: isReachable, StatusMessage: statusMessage, NumOccured: numOccured}
-	}()
-	return ch
 }

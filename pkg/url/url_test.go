@@ -3,61 +3,11 @@ package url
 import (
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"slices"
 	"testing"
 	"time"
 )
-
-func TestIsUrlValid(t *testing.T) {
-	cases := []struct {
-		name string
-		url  string
-		want bool
-	}{
-		{
-			"valid https url",
-			"https://www.google.de",
-			true,
-		}, {
-			"valid http url",
-			"https://www.google.de",
-			true,
-		}, {
-			"valid with path",
-			"https://www.google.de/gelbeseiten",
-			true,
-		}, {
-			"invalid url",
-			"wwwgooglede",
-			false,
-		}, {
-			"missing protocol",
-			"www.google.de",
-			false,
-		}, {
-			"missing host name",
-			"https://",
-			false,
-		}, {
-			"empty string",
-			"   ",
-			false,
-		}, {
-			"no tld",
-			"https://deinemama",
-			false,
-		},
-	}
-
-	for _, tt := range cases {
-		t.Run(tt.name, func(t *testing.T) {
-			got := IsUrlValid(tt.url)
-			if got != tt.want {
-				t.Errorf("got %v want %v on %s", got, tt.want, tt.url)
-			}
-		})
-	}
-}
 
 func TestGetBodyFromUrl(t *testing.T) {
 	t.Run("check body from a page that has 200 return", func(t *testing.T) {
@@ -239,4 +189,14 @@ func TestUrlIsAvailable(t *testing.T) {
 			t.Errorf("got %v want %v", got, want)
 		}
 	})
+}
+
+func TestExtractedUrlToUrlStatus(t *testing.T) {
+	input := ExtractedUrl{Url: "www.google.de", NumOccured: 5}
+	got := input.ToUrlStatus("OK", true)
+	want := UrlStatus{Url: "www.google.de", NumOccured: 5, IsReachable: true, StatusMessage: "OK"}
+
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("got %v, want %v", got, want)
+	}
 }

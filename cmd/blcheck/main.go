@@ -28,7 +28,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/Felixs/blcheck/pkg/report"
 	"github.com/Felixs/blcheck/pkg/url"
 )
 
@@ -56,8 +55,8 @@ func checkedArguments(flagUrl *string) {
 	flag.BoolVar(&flagVersion, "version", false, "Displays version of blcheck")
 	flag.BoolVar(&flagVersion, "v", false, "Displays version of blcheck")
 	// Ratelimit / parallel requests
-	flag.IntVar(&flagMaxParallelRequests, "max-parallel-requests", report.MaxNumParallelQueries, "Maximum number of parallel requests executed")
-	flag.IntVar(&flagMaxParallelRequests, "mpr", report.MaxNumParallelQueries, "Maximum number of parallel requests executed")
+	flag.IntVar(&flagMaxParallelRequests, "max-parallel-requests", url.MaxNumParallelQueries, "Maximum number of parallel requests executed")
+	flag.IntVar(&flagMaxParallelRequests, "mpr", url.MaxNumParallelQueries, "Maximum number of parallel requests executed")
 	// Timeout
 	flag.IntVar(&flagMaxTimeoutInSeconds, "max-response-timeout", int(url.DefaultHttpGetTimeout.Seconds()), "Maximum timeout wait on requests in seconds")
 	flag.IntVar(&flagMaxTimeoutInSeconds, "mrt", int(url.DefaultHttpGetTimeout.Seconds()), "Maximum timeout wait on requests in seconds")
@@ -113,7 +112,7 @@ func processUrl(inputUrl string) {
 	parsing_duration := time.Since(processStarttime).String()
 
 	url.SetHttpGetTimeoutSeconds(time.Duration(flagMaxTimeoutInSeconds) * time.Second)
-	urlReports := report.CustomizableCreateUrlReport(httpUrls, int(flagMaxParallelRequests))
+	urlReports := url.CustomizableCreateUrlReport(httpUrls, int(flagMaxParallelRequests))
 	urlReports.AddMetaData("initial_parsing_duration", parsing_duration)
 
 	switch {

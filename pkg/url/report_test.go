@@ -1,4 +1,4 @@
-package report
+package url
 
 import (
 	"net/http"
@@ -6,14 +6,12 @@ import (
 	"reflect"
 	"testing"
 	"time"
-
-	"github.com/Felixs/blcheck/pkg/url"
 )
 
 func TestCreateUrlReport(t *testing.T) {
 
 	t.Run("Check with empty url slice", func(t *testing.T) {
-		r := CreateUrlReport([]url.ExtractedUrl{})
+		r := CreateUrlReport([]ExtractedUrl{})
 		if len(r.UrlStatus) != 0 {
 			t.Errorf("Expected report to be empty, got %d entries", len(r.UrlStatus))
 		}
@@ -22,8 +20,8 @@ func TestCreateUrlReport(t *testing.T) {
 	t.Run("Check with one entry", func(t *testing.T) {
 		fakeServer := createDelayServerWithStatus(0*time.Second, 200)
 		defer fakeServer.Close()
-		inputUrls := []url.ExtractedUrl{{Url: fakeServer.URL, NumOccured: 1}}
-		expectedUrlStatus := []url.UrlStatus{{Url: fakeServer.URL, IsReachable: true, StatusMessage: http.StatusText(200)}}
+		inputUrls := []ExtractedUrl{{Url: fakeServer.URL, NumOccured: 1}}
+		expectedUrlStatus := []UrlStatus{{Url: fakeServer.URL, IsReachable: true, StatusMessage: http.StatusText(200)}}
 		r := CreateUrlReport(inputUrls)
 		assertReport(t, r, expectedUrlStatus)
 	})
@@ -33,11 +31,11 @@ func TestCreateUrlReport(t *testing.T) {
 		defer fakeServer.Close()
 		fakeServer2 := createDelayServerWithStatus(0*time.Second, 404)
 		defer fakeServer2.Close()
-		inputUrls := []url.ExtractedUrl{
+		inputUrls := []ExtractedUrl{
 			{Url: fakeServer.URL, NumOccured: 1},
 			{Url: fakeServer2.URL, NumOccured: 2},
 		}
-		expectedUrlStatus := []url.UrlStatus{
+		expectedUrlStatus := []UrlStatus{
 			{Url: fakeServer.URL, IsReachable: true, StatusMessage: ""},
 			{Url: fakeServer2.URL, IsReachable: false, StatusMessage: ""},
 		}
@@ -48,7 +46,7 @@ func TestCreateUrlReport(t *testing.T) {
 	t.Run("runs checks in parallel", func(t *testing.T) {
 		fakeServer := createDelayServerWithStatus(50*time.Millisecond, 200)
 		defer fakeServer.Close()
-		inputUrls := []url.ExtractedUrl{
+		inputUrls := []ExtractedUrl{
 			{Url: fakeServer.URL, NumOccured: 1},
 			{Url: fakeServer.URL, NumOccured: 2},
 			{Url: fakeServer.URL, NumOccured: 3},
@@ -64,7 +62,7 @@ func TestCreateUrlReport(t *testing.T) {
 	t.Run("runs checks in parallel with max number of workern", func(t *testing.T) {
 		fakeServer := createDelayServerWithStatus(50*time.Millisecond, 200)
 		defer fakeServer.Close()
-		inputUrls := []url.ExtractedUrl{
+		inputUrls := []ExtractedUrl{
 			{Url: fakeServer.URL, NumOccured: 1},
 			{Url: fakeServer.URL, NumOccured: 2},
 			{Url: fakeServer.URL, NumOccured: 3},
@@ -83,7 +81,7 @@ func TestAddMetaData(t *testing.T) {
 			ExecutedAt: time.Now(),
 			Runtime:    time.Second,
 			MetaData:   map[string]string{"test": "testvalue"},
-			UrlStatus:  []url.UrlStatus{},
+			UrlStatus:  []UrlStatus{},
 		}
 		want := map[string]string{"test": "testvalue"}
 
@@ -95,7 +93,7 @@ func TestAddMetaData(t *testing.T) {
 		report := NewUrlReport(
 			time.Now(),
 			time.Second,
-			[]url.UrlStatus{},
+			[]UrlStatus{},
 		)
 		key := "test2"
 		value := "new test value"
@@ -112,7 +110,7 @@ func TestAddMetaData(t *testing.T) {
 			time.Now(),
 			time.Second,
 			map[string]string{"test2": "first set data"},
-			[]url.UrlStatus{},
+			[]UrlStatus{},
 		}
 		key := "test2"
 		value := "new test value"
@@ -126,7 +124,7 @@ func TestAddMetaData(t *testing.T) {
 
 }
 
-func assertReport(t *testing.T, r UrlReport, expectedUrlStatus []url.UrlStatus) {
+func assertReport(t *testing.T, r UrlReport, expectedUrlStatus []UrlStatus) {
 	t.Helper()
 	if len(r.UrlStatus) != len(expectedUrlStatus) {
 		t.Fatalf("Checked urls not the same length, got %d want %d", len(r.UrlStatus), len(expectedUrlStatus))

@@ -1,12 +1,10 @@
-package report
+package url
 
 import (
 	"fmt"
 	"strings"
 	"sync"
 	"time"
-
-	"github.com/Felixs/blcheck/pkg/url"
 )
 
 // Max number of parallel routines to query webserver.
@@ -17,11 +15,11 @@ type UrlReport struct {
 	ExecutedAt time.Time         `json:"executed_at"`
 	Runtime    time.Duration     `json:"runtime"`
 	MetaData   map[string]string `json:"meta_data"`
-	UrlStatus  []url.UrlStatus   `json:"url_status"`
+	UrlStatus  []UrlStatus       `json:"url_status"`
 }
 
 // Convinience constructor
-func NewUrlReport(executedAt time.Time, runtime time.Duration, urlStatus []url.UrlStatus) UrlReport {
+func NewUrlReport(executedAt time.Time, runtime time.Duration, urlStatus []UrlStatus) UrlReport {
 	return UrlReport{
 		ExecutedAt: executedAt,
 		Runtime:    runtime,
@@ -59,16 +57,16 @@ func (r UrlReport) AddMetaData(key, value string) {
 }
 
 // Creates UrlReport from a list of given urls.
-func CreateUrlReport(urls []url.ExtractedUrl) UrlReport {
+func CreateUrlReport(urls []ExtractedUrl) UrlReport {
 	return CustomizableCreateUrlReport(urls, MaxNumParallelQueries)
 }
 
 // Creates UrlReport from a list of given urls with max. of parallel request routines.
-func CustomizableCreateUrlReport(urls []url.ExtractedUrl, maxRoutines int) UrlReport {
+func CustomizableCreateUrlReport(urls []ExtractedUrl, maxRoutines int) UrlReport {
 	start := time.Now()
-	inputChan := make(chan url.ExtractedUrl)
-	resultChan := make(chan url.UrlStatus)
-	urlStatus := []url.UrlStatus{}
+	inputChan := make(chan ExtractedUrl)
+	resultChan := make(chan UrlStatus)
+	urlStatus := []UrlStatus{}
 
 	// go routine that reads from result chan
 	var wg2 sync.WaitGroup
@@ -99,7 +97,7 @@ func CustomizableCreateUrlReport(urls []url.ExtractedUrl, maxRoutines int) UrlRe
 }
 
 // Go routine to gather UrlStatus from result channel.
-func gatherResults(wg2 *sync.WaitGroup, resultChan chan url.UrlStatus, urlStatus *[]url.UrlStatus) {
+func gatherResults(wg2 *sync.WaitGroup, resultChan chan UrlStatus, urlStatus *[]UrlStatus) {
 	defer wg2.Done()
 	for result := range resultChan {
 		*urlStatus = append(*urlStatus, result)
@@ -107,10 +105,10 @@ func gatherResults(wg2 *sync.WaitGroup, resultChan chan url.UrlStatus, urlStatus
 }
 
 // Go routine to get run url string by UrlIsAvailable to get UrlStatus.
-func checkUrlHandler(inputChan chan url.ExtractedUrl, resultChan chan url.UrlStatus, wg *sync.WaitGroup) {
+func checkUrlHandler(inputChan chan ExtractedUrl, resultChan chan UrlStatus, wg *sync.WaitGroup) {
 	defer wg.Done()
 	for inputUrl := range inputChan {
-		status := url.UrlIsAvailable(inputUrl)
+		status := UrlIsAvailable(inputUrl)
 		resultChan <- status
 	}
 }

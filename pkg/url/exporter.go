@@ -1,17 +1,15 @@
-package report
+package url
 
 import (
 	"encoding/json"
 	"fmt"
-
-	"github.com/Felixs/blcheck/pkg/url"
 )
 
 // Helper construct of UrlReport to customize the JSON conversion
 type JsonUrlReport struct {
-	ExecutedAt string          `json:"executed_at"`
-	Runtime    string          `json:"runtime"`
-	UrlStatus  []url.UrlStatus `json:"url_status"`
+	ExecutedAt string      `json:"executed_at"`
+	Runtime    string      `json:"runtime"`
+	UrlStatus  []UrlStatus `json:"url_status"`
 }
 
 // Converts UrlReport to JSON string
