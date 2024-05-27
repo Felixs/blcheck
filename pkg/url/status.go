@@ -6,6 +6,13 @@ import (
 	"time"
 )
 
+const (
+	DefaultHttpGetTimeout = 5 * time.Second
+)
+
+// time to wait for an answer of webserver
+var HttpGetTimeout = DefaultHttpGetTimeout
+
 // Information of a availability check on one webpage.
 type UrlStatus struct {
 	Url           string `json:"url"`
@@ -17,6 +24,11 @@ type UrlStatus struct {
 // String representation of a UrlStatus.
 func (s UrlStatus) String() string {
 	return fmt.Sprintf("%v\t%s\t%s\t%d", s.IsReachable, s.StatusMessage, s.Url, s.NumOccured)
+}
+
+// Overwrites module wide timeout for requests
+func SetHttpGetTimeoutSeconds(timeout time.Duration) {
+	HttpGetTimeout = timeout
 }
 
 // Trys a Get request on url and if status code = 200 and within timeout of HttpGetTimeout. Otherwise false.

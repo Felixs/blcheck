@@ -7,25 +7,15 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"time"
 
 	"mvdan.cc/xurls/v2"
 )
 
 const (
-	DefaultHttpGetTimeout = 5 * time.Second
 	// protocol prefixes
 	prefixHttp  = "http://"
 	prefixHttps = "https://"
 )
-
-// time to wait for an answer of webserver
-var HttpGetTimeout = DefaultHttpGetTimeout
-
-// Overwrites module wide timeout for requests
-func SetHttpGetTimeoutSeconds(timeout time.Duration) {
-	HttpGetTimeout = timeout
-}
 
 // Contains parsing info about url that is to check
 type ExtractedUrl struct {
