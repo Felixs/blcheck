@@ -34,6 +34,10 @@ Usage: blcheck <URL>
 -dry
 
 	Only gets urls from initial webpage and does not check the status of other urls
+
+-out
+
+	Writes output to given location. If directory is given, writes to blcheck.log in directory.
 */
 package main
 
@@ -51,9 +55,10 @@ const version = "0.0.2"
 var (
 	// Tool comandline flags
 	flagOutputJson    bool
-	flagOutputCsv     = true
+	flagOutputCsv     bool
+	flagOutputInFile  string
 	flagVersion       bool
-	flagExecuteDryRun = false
+	flagExecuteDryRun bool
 
 	flagUrl        string
 	flagUrlInclude string
@@ -99,6 +104,9 @@ func checkedArguments(flagUrl *string) {
 	// Flag if tool should run in dry mode, only getting links from initial webpage
 	flag.BoolVar(&flagExecuteDryRun, "dry", false, "Only gets urls from initial webpage and does not check the status of other urls")
 	flag.BoolVar(&flagExecuteDryRun, "d", false, "Only gets urls from initial webpage and does not check the status of other urls")
+	// Flag if output should be writen into file, gives path an name of file
+	flag.StringVar(&flagOutputInFile, "o", "", "Writes output to given location. If directory is given, writes to blcheck.log in directory.")
+	flag.StringVar(&flagOutputInFile, "out", "", "Writes output to given location. If directory is given, writes to blcheck.log in directory.")
 
 	// setting own print function, to handle positonal arguments
 	flag.Usage = printUsage
@@ -160,6 +168,7 @@ func processUrl(inputUrl string) {
 	parsing_duration := time.Since(processStarttime).String()
 	url.SetHttpGetTimeoutSeconds(time.Duration(flagMaxTimeoutInSeconds) * time.Second)
 
+	// create reports for all http urls
 	var urlReports url.UrlReport
 	if flagExecuteDryRun {
 		urlReports = url.CreateDryReport(httpUrls)
@@ -168,14 +177,23 @@ func processUrl(inputUrl string) {
 	}
 	urlReports.AddMetaData("initial_parsing_duration", parsing_duration)
 	urlReports.AddMetaData("total_extracted_urls", fmt.Sprint(numberUniqueUrls))
-	fmt.Println()
+
+	// creating report output
+	var reportOutput string
 	switch {
 	case flagOutputJson:
-		fmt.Println(urlReports.Json())
+		reportOutput = urlReports.Json()
 	case flagOutputCsv:
-		fmt.Println(urlReports.FullString())
+		reportOutput = urlReports.FullString()
 	default:
 		fmt.Println("No output format was chosen, that should never happen. How did you do that?")
 	}
 
+	if flagOutputInFile != "" {
+		err = url.WriteTo(flagOutputInFile, reportOutput)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
+	fmt.Println("Thanks for using blcheck. Feel free to check out the repo at https://github.com/Felixs/blcheck")
 }

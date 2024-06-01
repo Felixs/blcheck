@@ -51,6 +51,10 @@ Usage: blcheck <URL>
         Maximum number of parallel requests executed (default 5)
   -mrt int
         Maximum timeout wait on requests in seconds (default 5)
+  -o string
+        Writes output to given location. If directory is given, writes to blcheck.log in directory.
+  -out string
+        Writes output to given location. If directory is given, writes to blcheck.log in directory.
   -v    Displays version of blcheck
   -version
         Displays version of blcheck

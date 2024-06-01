@@ -41,7 +41,6 @@ func TestJson(t *testing.T) {
 	if got != want {
 		t.Errorf("got %q expected %q", got, want)
 	}
-
 }
 
 func TestConvertToJsonStruct(t *testing.T) {
@@ -78,5 +77,4 @@ func TestConvertToJsonStruct(t *testing.T) {
 	if !reflect.DeepEqual(want, got) {
 		t.Errorf("got %v, want %v", got, want)
 	}
-
 }

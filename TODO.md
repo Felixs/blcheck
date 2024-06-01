@@ -22,6 +22,7 @@
 - [x] move time to parse and number of urls to UrlReport meta data
 - [x] add a flag to exclude/include certain urls with regex (and the functionality ofc)
 - [x] add a dry run flag to check how many unique urls are found on a webpage
+- [ ] write output of blckeck to file with an -o/-out flag
 - [ ] create a presentable output format html, make accessible via flag
 - [ ] validate programm flags for sane inputs
 - [ ] *experimental* add a flag to use a certain proxy server or maybe dns resolver
