@@ -1,9 +1,11 @@
 package arguments
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/Felixs/blcheck/pkg/url"
 )
@@ -33,7 +35,7 @@ var (
 )
 
 // Parses the command line arguments and checks if they all needed arguments are present.
-func init() {
+func Parse() {
 	// TODO: if using 2 different flag names for a single values flag.Usage needs to be overwritten
 	// Version
 	flag.BoolVar(&DisplayVersion, "version", false, "Displays version of blcheck")
@@ -80,6 +82,36 @@ func init() {
 		os.Exit(3)
 	}
 	URL = flag.Arg(0)
+
+	if err := checkUrlParameter(URL); err != nil {
+		ErrorMessage = err.Error()
+		printUsage()
+		os.Exit(42)
+	}
+
+	checkArgument()
+}
+
+// Check if constrains or url parameter are met
+func checkUrlParameter(urlInput string) error {
+	if len(urlInput) < 3 {
+		return errors.New("URL to short")
+	}
+	return nil
+}
+
+// Validate content of arguments
+func checkArgument() {
+	// check URL for protocol prefix
+	url.InferHttpsPrefix(&URL)
+	// basic check if given string might be an url
+	if !url.IsUrlValid(URL) {
+		ErrorMessage = fmt.Sprintf("Not a valid url %s", URL)
+		printUsage()
+		os.Exit(4)
+	}
+	// Set internal timeout for checks
+	url.SetHttpGetTimeoutSeconds(time.Duration(MaxTimeoutInSeconds) * time.Second)
 }
 
 // Prints how to use the tool to stdout, with an error message if present.
