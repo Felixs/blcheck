@@ -62,7 +62,7 @@ Usage: blcheck <URL>
 
 ## Example output*
 ```shell
-./blcheck --show-reachable www.google.com
+./bin/blcheck --show-reachable www.google.com
 Infered https:// prefix, because given url did not have a protocol
 Checking URL:  https://www.google.com
 Started: 2024-06-01T10:57:54+02:00 , took: 872ms, urlcount: 12
