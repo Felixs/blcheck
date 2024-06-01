@@ -1,3 +1,9 @@
+# Refactoring Session
+- [ ] make sure marshalling erros get properly propergated and maybe add tests (lets see how it works)
+- [ ] split the main into several part. Dunno about parsing and execution in differen files, but the main processing routine becomes quite large
+- [x] move flag parsing out of main
+- [ ] add acceptence test for the main, after splitting into part.
+
 # Tasks
 - [x] create a cmd tool, that takes an url as input
 - [x] validate url input
@@ -35,6 +41,10 @@
 - [ ] serve output html als webserver
 - [ ] urls parser need to find relativ links to
 - [ ] make urls parser give infor about found link, is it a href, src, relativ link or text search url
+- [ ] check out cobra-cli for advanced cli argument parsing (https://www.kosli.com/blog/understanding-golang-command-line-arguments/)
+
+# Fixes
+- [ ] Check JSON urls encoding in url strings (e.g. "url": "https://maps.google.de/maps?hl=de\u0026tab=wl",)
 
 
 # maybe features for the future
