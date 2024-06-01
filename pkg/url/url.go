@@ -116,7 +116,7 @@ func filterNoneHttpUrls(strictUrls []string) []ExtractedUrl {
 // Given string is checked for prefixing http(s) protocoll and gets added https if needed.
 func InferHttpsPrefix(inputUrl *string) {
 	if !strings.HasPrefix(*inputUrl, prefixHttps) && !strings.HasPrefix(*inputUrl, prefixHttp) {
-		fmt.Println("Infered https:// prefix, because given url did not have an protocol")
+		fmt.Println("Infered https:// prefix, because given url did not have a protocol")
 		*inputUrl = "https://" + *inputUrl
 	}
 }

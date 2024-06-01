@@ -62,24 +62,27 @@ Usage: blcheck <URL>
 
 ## Example output*
 ```shell
-./bin/blcheck www.google.com
-2024/05/26 20:37:49 Checking URL:  www.google.com
-2024/05/26 20:37:49 infered https:// prefix, because given url did not have an protocol
-Started: 2024-05-26 20:37:49.796592218 +0200 CEST m=+0.487706897 , took: 657.857335ms, urlcount: 12
+./blcheck --show-reachable www.google.com
+Infered https:// prefix, because given url did not have a protocol
+Checking URL:  https://www.google.com
+Started: 2024-06-01T10:57:54+02:00 , took: 872ms, urlcount: 12
 Meta information:
-initial_parsing_duration: 487.463374ms
-#1      true    OK      https://www.google.com/imghp      1
-#2      true    OK      https://www.google.com/setprefdomain        1
-#3      true    OK      https://www.youtube.com 1
-#4      true    OK      https://news.google.com 1
-#5      true    OK      https://maps.google.de/maps        1
-#6      true    OK      https://play.google.com   1
-#7      true    OK      https://accounts.google.com/servicelogin  1
-#8      false   Not Found       http://schema.org/webpage       1
-#9      true    OK      http://www.google.de/history/optout       1
-#10     true    OK      https://www.google.de/intl/de/about/products     1
-#11     true    OK      https://mail.google.com/mail    1
-#12     true    OK      https://drive.google.com        1
+        initial_parsing_duration: 285.398457ms
+        total_extracted_urls: 12
+
+url                                             is_reachable    status_message  content_length  response_time   num_occured
+https://www.google.com/imghp                    true            OK              -1              52.767129ms     1
+https://www.google.com/setprefdomain            true            OK              -1              55.834137ms     1
+https://maps.google.de/maps                     true            OK              -1              145.421355ms    1
+https://accounts.google.com/servicelogin        true            OK              170442          222.108459ms    1
+https://www.youtube.com                         true            OK              499519          257.611805ms    1
+https://news.google.com                         true            OK              1636600         356.455411ms    1
+https://www.google.de/intl/de/about/products    true            OK              235684          249.307575ms    1
+http://www.google.de/history/optout             true            OK              246539          375.696233ms    1
+http://schema.org/webpage                       false           Not Found       284             438.883645ms    1
+https://play.google.com                         true            OK              2686403         697.007397ms    1
+https://mail.google.com                         true            OK              170850          439.482341ms    1
+https://drive.google.com                        true            OK              170785          423.845873ms    1
 ```
 (*) removed get parameter outputs from displayed urls
 

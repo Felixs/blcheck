@@ -38,6 +38,10 @@ Usage: blcheck <URL>
 -out
 
 	Writes output to given location. If directory is given, writes to blcheck.log in directory.
+
+-show-reachable
+
+	Includes reachable urls into report output
 */
 package main
 

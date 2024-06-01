@@ -31,7 +31,12 @@ func NewUrlReport(executedAt time.Time, runtime time.Duration, urlStatus []UrlSt
 
 // String representation auf UrlReport.
 func (r UrlReport) String() string {
-	return fmt.Sprintf("Started: %s , took: %s, urlcount: %d", r.ExecutedAt.Format(time.UnixDate), r.Runtime, len(r.UrlStatus))
+	return fmt.Sprintf(
+		"Started: %s , took: %2s, urlcount: %d",
+		r.ExecutedAt.Format(time.RFC3339),
+		r.Runtime.Round(time.Millisecond),
+		len(r.UrlStatus),
+	)
 }
 
 // String representation auf UrlReport with all UrlStatus.
@@ -45,12 +50,9 @@ func (r UrlReport) FullString() string {
 		}
 	}
 	builder.WriteString("\n")
-	// TODO: refactor this part into an function within url that converts slice of UrlStatus into a string
-
 	builder.WriteString(UrlStatusHeaderString() + "\n")
-	for i, s := range r.UrlStatus {
-		index := fmt.Sprintf("#%d", i+1)
-		builder.WriteString(index + "\t" + s.String() + "\n")
+	for _, s := range r.UrlStatus {
+		builder.WriteString(s.String() + "\n")
 	}
 
 	return builder.String()
