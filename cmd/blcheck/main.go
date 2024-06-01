@@ -194,6 +194,8 @@ func processUrl(inputUrl string) {
 		if err != nil {
 			fmt.Println(err)
 		}
+	} else {
+		fmt.Println(reportOutput)
 	}
 	fmt.Println("Thanks for using blcheck. Feel free to check out the repo at https://github.com/Felixs/blcheck")
 }
