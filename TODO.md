@@ -15,7 +15,8 @@
 - [x] fix basic info output for all http status codes and errors
 - [x] make http get timeout configurable with flag
 - [x] add advances info for UrlResults like response time, content length
-- [x] create a presentable output format csv, as default output
+- [x] create a presentable string output format, as default output
+- [ ] create a presentable output format csv, make accessible via flag
 - [x] create a presentable output format json, make accessible via flag
 - [x] while parsing the first html content, add a counter to unique urls how often they appear
 - [x] add github action to run test on push
@@ -23,7 +24,7 @@
 - [x] add a flag to exclude/include certain urls with regex (and the functionality ofc)
 - [x] add a dry run flag to check how many unique urls are found on a webpage
 - [x] write output of blckeck to file with an -o/-out flag
-- [ ] limit report output to only broken or timed out urls and give an exit code of != 0 if broken links found
+- [x] limit report output to only broken or timed out urls and give an exit code of != 0 if broken links found
 - [ ] adda flag to add all checked urls to output report
 - [ ] create a presentable output format html, make accessible via flag
 - [ ] validate programm flags for sane inputs
@@ -32,6 +33,8 @@
 - [ ] add a method to retry timed out requests if wanted (flag)
 - [ ] check how http.Head/Get handles redirects and how it can be tested in unit tests
 - [ ] serve output html als webserver
+- [ ] urls parser need to find relativ links to
+- [ ] make urls parser give infor about found link, is it a href, src, relativ link or text search url
 
 
 # maybe features for the future

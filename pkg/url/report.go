@@ -45,17 +45,42 @@ func (r UrlReport) FullString() string {
 		}
 	}
 	builder.WriteString("\n")
+	// TODO: refactor this part into an function within url that converts slice of UrlStatus into a string
+
 	builder.WriteString(UrlStatusHeaderString() + "\n")
 	for i, s := range r.UrlStatus {
 		index := fmt.Sprintf("#%d", i+1)
 		builder.WriteString(index + "\t" + s.String() + "\n")
 	}
+
 	return builder.String()
 }
 
 // Add a key-value meta date for UrlReport, does overwrite exisiting MetaData keys
 func (r UrlReport) AddMetaData(key, value string) {
 	r.MetaData[key] = value
+}
+
+// Checks if all url status are reachable, if not return false.
+func (r UrlReport) AllReachable() bool {
+	for _, s := range r.UrlStatus {
+		if !s.IsReachable {
+			return false
+		}
+	}
+	return true
+}
+
+// Removed all reachable UrlStatus from report.
+func (r UrlReport) CleanupReachableUrls() UrlReport {
+	newUrlStatus := []UrlStatus{}
+	for _, s := range r.UrlStatus {
+		if !s.IsReachable {
+			newUrlStatus = append(newUrlStatus, s)
+		}
+	}
+	r.UrlStatus = newUrlStatus
+	return r
 }
 
 // Creates a UrlReport without checking the urls for responses

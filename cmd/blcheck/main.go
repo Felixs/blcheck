@@ -50,7 +50,10 @@ import (
 	"github.com/Felixs/blcheck/pkg/url"
 )
 
-const version = "0.0.2"
+const (
+	version   = "0.0.2"
+	goodbyMsg = "Thanks for using blcheck. Feel free to check out the repo at https://github.com/Felixs/blcheck"
+)
 
 var (
 	// Tool comandline flags
@@ -60,9 +63,10 @@ var (
 	flagVersion       bool
 	flagExecuteDryRun bool
 
-	flagUrl        string
-	flagUrlInclude string
-	flagUrlExclude string
+	flagUrl               string
+	flagUrlInclude        string
+	flagUrlExclude        string
+	flagUrlShowReachables bool
 
 	flagMaxParallelRequests int
 	flagMaxTimeoutInSeconds int
@@ -107,6 +111,9 @@ func checkedArguments(flagUrl *string) {
 	// Flag if output should be writen into file, gives path an name of file
 	flag.StringVar(&flagOutputInFile, "o", "", "Writes output to given location. If directory is given, writes to blcheck.log in directory.")
 	flag.StringVar(&flagOutputInFile, "out", "", "Writes output to given location. If directory is given, writes to blcheck.log in directory.")
+	// Flag if reachable urls should be included into the output
+	flag.BoolVar(&flagUrlShowReachables, "sr", false, "Includes reachable urls in report")
+	flag.BoolVar(&flagUrlShowReachables, "show-reachable", false, "Includes reachable urls in report")
 
 	// setting own print function, to handle positonal arguments
 	flag.Usage = printUsage
@@ -178,6 +185,11 @@ func processUrl(inputUrl string) {
 	urlReports.AddMetaData("initial_parsing_duration", parsing_duration)
 	urlReports.AddMetaData("total_extracted_urls", fmt.Sprint(numberUniqueUrls))
 
+	// cleanup reports if wanted
+	if !flagUrlShowReachables {
+		urlReports = urlReports.CleanupReachableUrls()
+	}
+
 	// creating report output
 	var reportOutput string
 	switch {
@@ -189,6 +201,7 @@ func processUrl(inputUrl string) {
 		fmt.Println("No output format was chosen, that should never happen. How did you do that?")
 	}
 
+	//  deciding where to write output to
 	if flagOutputInFile != "" {
 		err = url.WriteTo(flagOutputInFile, reportOutput)
 		if err != nil {
@@ -197,5 +210,8 @@ func processUrl(inputUrl string) {
 	} else {
 		fmt.Println(reportOutput)
 	}
-	fmt.Println("Thanks for using blcheck. Feel free to check out the repo at https://github.com/Felixs/blcheck")
+	fmt.Println(goodbyMsg)
+	if !urlReports.AllReachable() {
+		os.Exit(1)
+	}
 }

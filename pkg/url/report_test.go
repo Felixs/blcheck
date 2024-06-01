@@ -132,6 +132,92 @@ func TestAddMetaData(t *testing.T) {
 			t.Errorf("got %v expected %v", report.MetaData, want)
 		}
 	})
+}
+
+func TestCleanupReachableUrls(t *testing.T) {
+
+	cases := []struct {
+		name string
+		r    UrlReport
+		want int
+	}{
+		{
+			"one status not reachable",
+			UrlReport{UrlStatus: []UrlStatus{{IsReachable: false}}},
+			1,
+		}, {
+			"one status reachable",
+			UrlReport{UrlStatus: []UrlStatus{{IsReachable: true}}},
+			0,
+		}, {
+			"two status not reachable",
+			UrlReport{UrlStatus: []UrlStatus{{IsReachable: false}, {IsReachable: false}}},
+			2,
+		}, {
+			"two status reachable",
+			UrlReport{UrlStatus: []UrlStatus{{IsReachable: true}, {IsReachable: true}}},
+			0,
+		}, {
+			"two status, one reachable one not",
+			UrlReport{UrlStatus: []UrlStatus{{IsReachable: true}, {IsReachable: false}}},
+			1,
+		}, {
+			"two status, one not reachable one is",
+			UrlReport{UrlStatus: []UrlStatus{{IsReachable: false}, {IsReachable: true}}},
+			1,
+		},
+	}
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.r.CleanupReachableUrls()
+			if len(got.UrlStatus) != tt.want {
+				t.Errorf("got (%v) wrong number of urlstatus, expected (%v)", len(tt.r.UrlStatus), tt.want)
+			}
+		})
+	}
+}
+
+func TestReportAllReachable(t *testing.T) {
+
+	cases := []struct {
+		name string
+		r    UrlReport
+		want bool
+	}{
+		{
+			"one reachable",
+			UrlReport{UrlStatus: []UrlStatus{{IsReachable: true}}},
+			true,
+		},
+		{
+			"two reachable",
+			UrlReport{UrlStatus: []UrlStatus{{IsReachable: true}, {IsReachable: true}}},
+			true,
+		},
+		{
+			"one not reachable",
+			UrlReport{UrlStatus: []UrlStatus{{IsReachable: false}}},
+			false,
+		},
+		{
+			"one not reachable, one reachable",
+			UrlReport{UrlStatus: []UrlStatus{{IsReachable: false}, {IsReachable: true}}},
+			false,
+		},
+		{
+			"one reachable, one not reachable",
+			UrlReport{UrlStatus: []UrlStatus{{IsReachable: true}, {IsReachable: false}}},
+			false,
+		},
+	}
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.r.AllReachable()
+			if got != tt.want {
+				t.Errorf("got %v want %v", got, tt.want)
+			}
+		})
+	}
 
 }
 
