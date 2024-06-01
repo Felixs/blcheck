@@ -17,6 +17,9 @@
 # Output bin folder
 bin/
 
+# Tests output folder
+tests/
+
 # Dependency directories (remove the comment below to include it)
 # vendor/
 
