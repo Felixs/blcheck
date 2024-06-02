@@ -55,6 +55,7 @@ func deliverReport(urlReports url.UrlReport) error {
 	}
 	if err != nil {
 		fmt.Println("Error in report output creation: " + err.Error())
+		os.Exit(9)
 	}
 
 	if args.OutputInFile != "" {
