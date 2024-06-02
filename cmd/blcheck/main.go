@@ -44,13 +44,17 @@ func main() {
 // Delivers UrlReport as desired format
 func deliverReport(urlReports url.UrlReport) error {
 	var reportOutput string
+	var err error
 	switch {
 	case args.OutputAsJSON:
-		reportOutput = urlReports.Json()
+		reportOutput, err = urlReports.Json()
 	case args.OutputAsCSV:
-		reportOutput = fmt.Sprintln("CSV format not impelented jet")
+		reportOutput, err = urlReports.Csv(true)
 	default:
 		reportOutput = urlReports.FullString()
+	}
+	if err != nil {
+		fmt.Println("Error in report output creation: " + err.Error())
 	}
 
 	if args.OutputInFile != "" {

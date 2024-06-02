@@ -1,8 +1,8 @@
 # Refactoring Session
-- [ ] make sure marshalling erros get properly propergated and maybe add tests (lets see how it works)
+- [x] make sure marshalling erros get properly propergated ~~and maybe add tests (lets see how it works)~~
 - [x] split the main into several part. Dunno about parsing and execution in differen files, but the main processing routine becomes quite large
 - [x] move flag parsing out of main
-- [ ] add acceptence test for the main, after splitting into part.
+- [ ] add acceptence test for the main
 
 # Tasks
 - [x] create a cmd tool, that takes an url as input
@@ -22,7 +22,7 @@
 - [x] make http get timeout configurable with flag
 - [x] add advances info for UrlResults like response time, content length
 - [x] create a presentable string output format, as default output
-- [ ] create a presentable output format csv, make accessible via flag
+- [x] create a presentable output format csv, make accessible via flag
 - [ ] create a presentable output format html, make accessible via flag
 - [x] create a presentable output format json, make accessible via flag
 - [x] while parsing the first html content, add a counter to unique urls how often they appear
