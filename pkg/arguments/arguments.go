@@ -5,10 +5,15 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/Felixs/blcheck/pkg/constants"
 	"github.com/Felixs/blcheck/pkg/url"
+)
+
+const (
+	urlMinLength = 4
 )
 
 var (
@@ -78,30 +83,81 @@ func Parse() {
 		os.Exit(constants.ExitSuccess)
 	}
 	if flag.NArg() != 1 {
-		ErrorMessage = "URL is required"
-		printUsage()
-		os.Exit(constants.ExitMissingParameter)
+		writeUsageAndExit("URL is required", constants.ExitMissingParameter)
 	}
 	URL = flag.Arg(0)
 
+	if err := checkOutputFormats([]bool{OutputAsJSON, OutputAsCSV}); err != nil {
+		writeUsageAndExit(err.Error(), constants.ExitToManyOutputFormats)
+	}
+
 	if err := checkUrlParameter(URL); err != nil {
-		ErrorMessage = err.Error()
-		printUsage()
-		os.Exit(constants.ExitErrorInParameterEvaluation)
+		writeUsageAndExit(err.Error(), constants.ExitErrorInParameterEvaluation)
+	}
+
+	if err := checkMaxParallelRequests(MaxParallelRequests); err != nil {
+		writeUsageAndExit(err.Error(), constants.ExitInvalidNumberMaxParallelRequests)
+	}
+
+	if err := checkMaxTimeoutInSeconds(MaxTimeoutInSeconds); err != nil {
+		writeUsageAndExit(err.Error(), constants.ExitInlvaidNumberMaxTimeoutInSeconds)
 	}
 
 	checkArgument()
 }
 
-// Check if constrains or url parameter are met
+// Write usage text with explicit error message and exits with code.
+func writeUsageAndExit(errorMessage string, statusCode int) {
+	ErrorMessage = errorMessage
+	printUsage()
+	os.Exit(statusCode)
+}
+
+// Check if constrains or url parameter are met.
 func checkUrlParameter(urlInput string) error {
-	if len(urlInput) < 3 {
+
+	if len(urlInput) < urlMinLength {
 		return errors.New("URL to short")
+	}
+	if !strings.Contains(urlInput, ".") {
+		return errors.New("no dot in URL")
 	}
 	return nil
 }
 
-// Validate content of arguments
+// Checks if only max one output format is chosen.
+func checkOutputFormats(outputFormats []bool) error {
+	findCounter := 0
+	for _, format := range outputFormats {
+		if format {
+			findCounter += 1
+			if findCounter > 1 {
+				return errors.New("more than one output format chosen")
+			}
+		}
+	}
+	return nil
+}
+
+// Checks if MaxParallelRequests is positiv integer.
+func checkMaxParallelRequests(maxParallelRequests int) error {
+	if maxParallelRequests <= 0 {
+		return errors.New("MaxParallelRequests needs to be a positiv number")
+	}
+
+	return nil
+}
+
+// Checks if MaxTimeoutInSeconds is positiv integer.
+func checkMaxTimeoutInSeconds(maxTimeoutInSeconds int) error {
+	if maxTimeoutInSeconds <= 0 {
+		return errors.New("MaxTimeoutInSeconds needs to be a positiv number")
+	}
+
+	return nil
+}
+
+// Validate content of arguments.
 func checkArgument() {
 	// check URL for protocol prefix
 	url.InferHttpsPrefix(&URL)
@@ -117,13 +173,13 @@ func checkArgument() {
 
 // Prints how to use the tool to stdout, with an error message if present.
 func printUsage() {
-	if ErrorMessage != "" {
-		fmt.Println("ERROR:" + ErrorMessage)
-	}
 
 	fmt.Printf(`blcheck (%s)- A simple tool to check which links on your websites are broken.
 	
 Usage: blcheck <URL>
 `, Version)
 	flag.PrintDefaults()
+	if ErrorMessage != "" {
+		fmt.Println("ERROR:" + ErrorMessage)
+	}
 }
