@@ -3,6 +3,7 @@
 - [x] split the main into several part. Dunno about parsing and execution in differen files, but the main processing routine becomes quite large
 - [x] move flag parsing out of main
 - [ ] add acceptence test for the main
+- [x] definde error status code as constants
 
 # Tasks
 - [x] create a cmd tool, that takes an url as input

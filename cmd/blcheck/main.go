@@ -9,6 +9,7 @@ import (
 	"time"
 
 	args "github.com/Felixs/blcheck/pkg/arguments" // handels flag parsing on init
+	"github.com/Felixs/blcheck/pkg/constants"
 	"github.com/Felixs/blcheck/pkg/url"
 )
 
@@ -19,7 +20,7 @@ func main() {
 	httpUrls, err := extractURLs(args.URL)
 	if err != nil {
 		fmt.Printf("Failure to extract links from given URL. ERROR: %v", err)
-		os.Exit(6)
+		os.Exit(constants.ExitUrlNotReachable)
 	}
 	parsingDuration := time.Since(parseStart)
 
@@ -31,13 +32,13 @@ func main() {
 	err = deliverReport(urlReports)
 	if err != nil {
 		fmt.Printf("Failure to deliver output. ERROR: %v", err)
-		os.Exit(7)
+		os.Exit(constants.ExitFailedToWriteReport)
 	}
 	fmt.Println(args.GoodbyMsg)
 
 	// descide on exit code
 	if !urlReports.AllReachable() {
-		os.Exit(1)
+		os.Exit(constants.ExitNotAllReportReachable)
 	}
 }
 
@@ -55,7 +56,7 @@ func deliverReport(urlReports url.UrlReport) error {
 	}
 	if err != nil {
 		fmt.Println("Error in report output creation: " + err.Error())
-		os.Exit(9)
+		os.Exit(constants.ExitFailedToCreateReport)
 	}
 
 	if args.OutputInFile != "" {

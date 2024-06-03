@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/Felixs/blcheck/pkg/constants"
 	"github.com/Felixs/blcheck/pkg/url"
 )
 
@@ -74,19 +75,19 @@ func Parse() {
 
 	if DisplayVersion {
 		fmt.Println("blcheck " + Version + "\n2024 - Felix Sponholz")
-		os.Exit(0)
+		os.Exit(constants.ExitSuccess)
 	}
 	if flag.NArg() != 1 {
 		ErrorMessage = "URL is required"
 		printUsage()
-		os.Exit(3)
+		os.Exit(constants.ExitMissingParameter)
 	}
 	URL = flag.Arg(0)
 
 	if err := checkUrlParameter(URL); err != nil {
 		ErrorMessage = err.Error()
 		printUsage()
-		os.Exit(42)
+		os.Exit(constants.ExitErrorInParameterEvaluation)
 	}
 
 	checkArgument()
@@ -108,7 +109,7 @@ func checkArgument() {
 	if !url.IsUrlValid(URL) {
 		ErrorMessage = fmt.Sprintf("Not a valid url %s", URL)
 		printUsage()
-		os.Exit(4)
+		os.Exit(constants.ExitInvalidUrlParameter)
 	}
 	// Set internal timeout for checks
 	url.SetHttpGetTimeoutSeconds(time.Duration(MaxTimeoutInSeconds) * time.Second)
