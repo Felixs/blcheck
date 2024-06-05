@@ -2,7 +2,9 @@
 - [x] make sure marshalling erros get properly propergated ~~and maybe add tests (lets see how it works)~~
 - [x] split the main into several part. Dunno about parsing and execution in differen files, but the main processing routine becomes quite large
 - [x] move flag parsing out of main
-- [ ] add acceptence test for the main
+- [o] add acceptence test for the main
+  - [ ] move the tmp path for test compiles to other location
+  - [ ] add further test, at least for all status codes that are definded
 - [x] definde error status code as constants
 
 # Tasks
@@ -34,7 +36,7 @@
 - [x] write output of blckeck to file with an -o/-out flag
 - [x] limit report output to only broken or timed out urls and give an exit code of != 0 if broken links found
 - [x] add flag to add all checked urls to output report
-- [ ] validate programm flags for sane inputs
+- [x] validate programm flags for sane inputs
 - [ ] *experimental* add a flag to use a certain proxy server or maybe dns resolver
 - [ ] add CHANGELOG.md by autochangelog
 - [ ] add a method to retry timed out requests if wanted (flag)

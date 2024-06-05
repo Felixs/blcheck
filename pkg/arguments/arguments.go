@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/Felixs/blcheck/pkg/constants"
@@ -13,7 +12,7 @@ import (
 )
 
 const (
-	urlMinLength = 4
+	urlMinLength = 2
 )
 
 var (
@@ -119,9 +118,6 @@ func checkUrlParameter(urlInput string) error {
 	if len(urlInput) < urlMinLength {
 		return errors.New("URL to short")
 	}
-	if !strings.Contains(urlInput, ".") {
-		return errors.New("no dot in URL")
-	}
 	return nil
 }
 
@@ -178,6 +174,7 @@ func printUsage() {
 	
 Usage: blcheck <URL>
 `, Version)
+	flag.CommandLine.SetOutput(os.Stdout)
 	flag.PrintDefaults()
 	if ErrorMessage != "" {
 		fmt.Println("ERROR:" + ErrorMessage)

@@ -179,6 +179,15 @@ func TestIsUrlValid(t *testing.T) {
 			"no tld",
 			"https://deinemama",
 			false,
+		}, {
+			"localhost without port",
+			"http://localhost/index.html",
+			true,
+		},
+		{
+			"localhost with port",
+			"http://localhost:1337/index.html",
+			true,
 		},
 	}
 

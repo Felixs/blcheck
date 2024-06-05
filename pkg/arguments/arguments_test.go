@@ -5,19 +5,18 @@ import (
 )
 
 func TestCheckArguments(t *testing.T) {
-	t.Run("url string must contain at least 4 characters, 1 domain, 1 dot, 2 tld", func(t *testing.T) {
-		URL = "ata"
+	t.Run("url string must contain at least 2 characters", func(t *testing.T) {
+		URL = "a"
 		err := checkUrlParameter(URL)
 		if err == nil {
 			t.Errorf("Expected an failure")
 		}
 	})
-
-	t.Run("url string must contain at least 1 domain", func(t *testing.T) {
-		URL = "asdfasdfasfdasdf"
+	t.Run("url with port an path needs to pass", func(t *testing.T) {
+		URL = "http://localhost:1337/index.html"
 		err := checkUrlParameter(URL)
-		if err == nil {
-			t.Errorf("Expected an failure")
+		if err != nil {
+			t.Errorf("Unexpected error, %v", err)
 		}
 	})
 

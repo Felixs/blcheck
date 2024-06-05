@@ -19,7 +19,7 @@ func main() {
 	parseStart := time.Now()
 	httpUrls, err := extractURLs(args.URL)
 	if err != nil {
-		fmt.Printf("Failure to extract links from given URL. ERROR: %v", err)
+		fmt.Printf("%v\nERROR: Failure to extract links from given URL.\n", err)
 		os.Exit(constants.ExitUrlNotReachable)
 	}
 	parsingDuration := time.Since(parseStart)

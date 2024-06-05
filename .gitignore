@@ -19,6 +19,7 @@ bin/
 
 # Tests output folder
 tests/
+cmd/blcheck/test
 
 # Dependency directories (remove the comment below to include it)
 # vendor/

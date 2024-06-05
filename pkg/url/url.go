@@ -55,7 +55,10 @@ func IsUrlValid(inputUrl string) (isValid bool) {
 	} else if urlData.Host == "" {
 		return false
 	} else if !strings.Contains(urlData.Host, ".") {
-		return false
+		if urlData.Hostname() != "localhost" {
+			return false
+		}
+
 	}
 	return true
 }
